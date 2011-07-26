@@ -1,0 +1,3 @@
+[submodule "lib/Vendor/mockery"]
+	path = lib/Vendor/mockery
+	url = https://github.com/padraic/mockery.git
