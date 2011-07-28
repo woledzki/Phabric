@@ -78,6 +78,105 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         $this->object->create($tableData);
     }
 
+    public function testCreateWithDefaults()
+    {
+        $tableData = array(
+            array('name', 'datetime', 'venue'),
+            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel')
+        );
+
+        $expectedInsert =  array('name' => 'PHPNW',
+                                 'datetime' => '2011-10-08 09:00:00',
+                                 'venue' => 'Ramada Hotel',
+                                 'description' => 'TEST DESCRIPTION');
+
+        $this->mockedConnection->shouldReceive('insert')
+                               ->with('Event', $expectedInsert)
+                               ->once();
+
+        $this->object->setTableName('Event');
+        $this->object->setDefaults(array(
+                        'description' => 'TEST DESCRIPTION',
+                        'venue' => 'TEST VENUE'
+            ));
+
+        $this->object->create($tableData);
+    }
+
+    public function testCreateWithDataTranslations()
+    {
+        $tableData = array(
+            array('name', 'datetime', 'venue', 'description'),
+            array('PHPNW', '08/10/2011 09:00', 'Ramada Hotel', 'A Great Conf!')
+        );
+
+        $expectedInsert =  array('name' => 'PHPNW',
+                                 'datetime' => '2011-10-08 09:00:00',
+                                 'venue' => 'Ramada Hotel',
+                                 'description' => 'A Great Conf!');
+
+        $this->mockedConnection->shouldReceive('insert')
+                               ->with('Event', $expectedInsert)
+                               ->once();
+
+        $this->object->setTableName('Event');
+
+        $this->object->registerNamedDataTranslation('UKTOMYSQLDATE',
+                function($date){
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
+                    return $date->format('Y-m-d H:i:s');
+                }
+                );
+
+        $this->object->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
+
+        $this->object->create($tableData);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testRegisterNamedDataTranslationInvalidCallable()
+    {
+        $this->object->registerNamedDataTranslation('test', 'test');
+    }
+
+    public function testCreateWithMultipleFeaturesEnabled()
+    {
+        $tableData = array(
+            array('Name', 'Date', 'Venue'),
+            array('PHPNW', '08/10/2011 09:00', 'Ramada Hotel')
+        );
+
+        $expectedInsert =  array('name' => 'PHPNW',
+                                 'datetime' => '2011-10-08 09:00:00',
+                                 'venue' => 'Ramada Hotel',
+                                 'description' => 'TEST DESCRIPTION');
+
+        $this->mockedConnection->shouldReceive('insert')
+                               ->with('Event', $expectedInsert)
+                               ->once();
+
+        $this->object->setTableName('Event');
+        $this->object->setNameTranslations(array('Date' => 'datetime'));
+
+        $this->object->setDefaults(array(
+                        'description' => 'TEST DESCRIPTION',
+                        'venue' => 'TEST VENUE'
+            ));
+
+        $this->object->registerNamedDataTranslation('UKTOMYSQLDATE',
+                function($date){
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
+                    return $date->format('Y-m-d H:i:s');
+                }
+        );
+
+        $this->object->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
+
+        $this->object->create($tableData);
+    }
+
 }
 
 ?>

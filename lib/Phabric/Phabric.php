@@ -38,6 +38,14 @@ class Phabric
     protected $dataTranslations = array();
 
     /**
+     * An array of functions used to transform data.
+     * The key of the array should be a unique reference used to identify the function.
+     *
+     * @var array
+     */
+    protected $dataTranslationFunctions = array();
+
+    /**
      * Default values to augment Gherkin table data with.
      *
      * @var array
@@ -125,7 +133,7 @@ class Phabric
      */
     public function setDefaults(array $defaults)
     {
-
+        $this->defaults = $defaults;
     }
 
     /**
@@ -145,9 +153,31 @@ class Phabric
      *
      * @return void
      */
-    public function setDataTranslations()
+    public function setDataTranslations($translations)
     {
+        foreach($translations as $colName => $translationName)
+        {
+            $this->dataTranslations[$colName] = $translationName;
+        }
+    }
+
+    /**
+     * Registers a function to translate data from the format used in a gherkin
+     * table to the data to be entered into the DB.
+     *
+     * @param string $name        This should match with the name of the column after name translation.
+     * @param lambda $translation This should be a lambda. It should take one argument: the data to be transformed.
+     *
+     * @return void
+     */
+    public function registerNamedDataTranslation($name, $translation)
+    {
+        if(!\is_callable($translation))
+        {
+            throw new \InvalidArgumentException('Translation passed to ' . __METHOD__ . ' is not callable');
+        }
         
+        $this->dataTranslationFunctions[$name] = $translation;
     }
 
     /**
@@ -171,10 +201,22 @@ class Phabric
         {
             $row = array_combine($header, $row);
 
+            if(isset($this->defaults))
+            {
+                $this->mergeDefaults($row);
+            }
+
+            foreach($row as $colName => &$colValue)
+            {
+                if(isset($this->dataTranslations[$colName]))
+                {
+                    var_dump($colName, $colValue);
+                    $colValue = $this->dataTranslationFunctions[$this->dataTranslations[$colName]]($colValue);
+                }
+            }
+            //var_dump($row);
             $this->db->insert($this->tableName, $row);
         }
-
-        
     }
 
     /**
@@ -200,6 +242,22 @@ class Phabric
     }
 
     /**
+     * Method used to merge the set default parameters with a row of data from
+     * a Gherkin table.
+     *
+     * This method should be used after an name based transformations.
+     * 
+     * @param array $row
+     *
+     * @return void
+     */
+    protected function mergeDefaults(& $row)
+    {
+        $defaultsReq = array_diff_key($this->defaults, $row);   
+        $row = array_merge($row, $defaultsReq);
+    }
+
+    /**
      * Update a previously inserted entity with the new data from a gherkin table.
      *
      * @param string $name Human readable entity name
@@ -212,6 +270,5 @@ class Phabric
         
     }
 
-    
 }
 
