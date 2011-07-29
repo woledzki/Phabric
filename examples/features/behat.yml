@@ -1,0 +1,15 @@
+default:
+  context:
+    class: 'FeatureContext'
+    parameters:
+      database:
+        username: 'behat-demo'
+        password: 'behat-demo'
+        dbname:   'behat-demo'
+        host:     'localhost'
+        driver:   'pdo_mysql'
+      baseurl: 'http://behat-demo.dev/'
+      registry:
+        baseurl: 'http://behat-demo.dev/'
+        eventsResourceUri: events
+        eventsResourceMethod: GET
