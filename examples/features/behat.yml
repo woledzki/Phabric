@@ -13,3 +13,14 @@ default:
         baseurl: 'http://behat-demo.dev/'
         eventsResourceUri: events
         eventsResourceMethod: GET
+      Phabric:
+        entities:
+          event:
+            tableName: 'Event'
+            entityName: 'Event'
+            nameTranslations:
+              Date: datetime
+              Desc: description
+            dataTranslations:
+              datetime: UKTOMYSQLDATE
+          

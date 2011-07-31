@@ -7,6 +7,9 @@ use Behat\Behat\Context\ClosuredContextInterface,
 use Behat\Gherkin\Node\PyStringNode,
  Behat\Gherkin\Node\TableNode,
  Behat\Behat\Event\SuiteEvent;
+use Phabric\Factory as pFactory;
+use Phabric\Phabric;
+use Phabric\Bus;
 
 require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Framework/Assert/Functions.php';
@@ -19,7 +22,19 @@ require_once __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common
 class FeatureContext extends BehatContext
 {
 
-    private $eventsPhabric;
+    /**
+     * The Phabric Bus
+     *
+     * @var Phabric\Bus
+     */
+    private $phabricBus;
+
+    /**
+     * The Databse Connection.
+     *
+     * @var Doctrine\DBAL\Connection
+     */
+    private static $db;
 
     /**
      * Initializes context.
@@ -29,7 +44,8 @@ class FeatureContext extends BehatContext
      */
     public function __construct(array $parameters)
     {
-        $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', __DIR__ . '/../../../lib');
+       
+        $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
         $phaLoader->register();
 
         $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
@@ -40,30 +56,37 @@ class FeatureContext extends BehatContext
 
         $config = new \Doctrine\DBAL\Configuration();
 
-        $dbCon = \Doctrine\DBAL\DriverManager::getConnection(array(
+        self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
                     'dbname' => $parameters['database']['dbname'],
                     'user' => $parameters['database']['username'],
                     'password' => $parameters['database']['password'],
                     'host' => $parameters['database']['host'],
                     'driver' => $parameters['database']['driver'],
                 ));
+        
+        pFactory::setDatabaseConnection(self::$db);
 
-        $this->eventsPhabric = new \Phabric\Phabric($dbCon);
-        $this->eventsPhabric->setEntityName('Event');
-        $this->eventsPhabric->setTableName('event');
+        $event = pFactory::createPhabric('event', $parameters['Phabric']['entities']['event']);
 
-        $this->eventsPhabric->setNameTranslations(array('Date' => 'datetime',
-            'Desc' => 'description'));
+        $this->phabricBus = pFactory::getBus();
 
-        $this->eventsPhabric->registerNamedDataTranslation('UKTOMYSQLDATE',
-                function($date)
-                {
+        $this->phabricBus->registerNamedDataTranslation(
+                'UKTOMYSQLDATE',
+                function($date){
                     $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                     return $date->format('Y-m-d H:i:s');
                 }
         );
 
-        $this->eventsPhabric->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
+    }
+    
+    /**
+     * @BeforeScenario
+     */
+    public function functionsetDB()
+    {
+        $sql = file_get_contents(__DIR__ . '/../../sql/behat-demo-dump.sql');
+        self::$db->query($sql);
     }
 
     /**
@@ -80,7 +103,9 @@ class FeatureContext extends BehatContext
     public function theFollowingEventsExist(TableNode $table)
     {
         $tableData = $table->getRows();
-        $this->eventsPhabric->create($tableData);
+
+        $eventPh = $this->phabricBus->getEntity('event');
+        $eventPh->create($tableData);
     }
 
     /**
@@ -88,7 +113,11 @@ class FeatureContext extends BehatContext
      */
     public function iSelectAllRecordsFromTheEventTable()
     {
-        throw new PendingException();
+        $sql = 'SELECT * FROM event';
+
+        $rows = self::$db->fetchAll($sql);
+
+        $this->qResult = $rows;
     }
 
     /**
@@ -96,7 +125,25 @@ class FeatureContext extends BehatContext
      */
     public function iShouldSeeTheFollowingRecords(TableNode $table)
     {
-        throw new PendingException();
+        // Get the col names
+        $topRow = reset($this->qResult);
+
+        // Col names - id
+        $cols = array_keys($topRow);
+        array_shift($cols);
+
+        $actualResults = array($cols);
+
+        foreach($this->qResult as $row)
+        {
+            // Remove the id from the results
+            array_shift($row);
+            $actualResults[] = array_values($row);
+        }
+
+        $expectedResults = $table->getRows();
+
+        assertEquals($expectedResults, $actualResults);
     }
 
 }

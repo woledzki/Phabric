@@ -53,7 +53,7 @@ class Factory {
 
         if(isset($config))
         {
-            $entity = new Phabric(self::$db, slef::$bus, $config);
+            $entity = new Phabric(self::$db, self::$bus, $config);
         }
         else
         {

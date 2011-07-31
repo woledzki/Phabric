@@ -40,14 +40,6 @@ class Phabric
     protected $dataTranslations = array();
 
     /**
-     * An array of functions used to transform data.
-     * The key of the array should be a unique reference used to identify the function.
-     *
-     * @var array
-     */
-    protected $dataTranslationFunctions = array();
-
-    /**
      * Default values to augment Gherkin table data with.
      *
      * @var array
@@ -102,7 +94,7 @@ class Phabric
 
             if(isset($config['dataTranslations']))
             {
-                $this->setDataTranslations($config['dataTranslation']);
+                $this->setDataTranslations($config['dataTranslations']);
             }
 
             if(isset($config['defaults']))
@@ -176,6 +168,7 @@ class Phabric
     /**
      * Sets the translations used to transform values in the gherkin text.
      * EG - A date transformation d/m/y > Y-m-d H:i:s
+     * Note: These must map to functions registered with the Phabric\Bus
      *
      * @return void
      */
