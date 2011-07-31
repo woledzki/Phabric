@@ -1,8 +1,10 @@
 <?php
 namespace Phabric;
+use Phabric\Bus;
 use Doctrine\DBAL\Connection;
 /**
- * Abstract class when implementing a creator.
+ * Phabric base class. Encapsulates the basic single table create and
+ * update behaviour used to translate Gherkin tables into database entries.
  *
  * @package Phabric
  * @author  Ben Waine <ben@ben-waine.co.uk>
@@ -60,15 +62,26 @@ class Phabric
     protected $db;
 
     /**
+     * An instance of the Phabric Bus.
+     * Used as a point of access to other instances of phabric representing
+     * other database tables.
+     *
+     * @var Phabric\Bus
+     */
+    protected $bus;
+
+    /**
      * Initialises an instance of the Phabric class.
      *
      * @param Doctrine\DBAL\Connection $db
      * @param array                    $config
      *
      */
-    public function __construct(Connection $db, $config = null)
+    public function __construct(Connection $db, Bus $bus, $config = null)
     {
         $this->db = $db;
+
+        $this->bus = $bus;
 
         if(isset($config))
         {
@@ -100,6 +113,19 @@ class Phabric
     }
 
     /**
+     * Sets the instance of Phabric\Bus in use by this instance of Phabric.
+     *
+     * @param Bus $bus
+     *
+     * @return void.
+     * 
+     */
+    public function setBus(Bus $bus)
+    {
+        $this->bus = $bus;
+    }
+
+    /**
      * Set the human readable name of the entity
      * 
      * @param string $name
@@ -108,7 +134,7 @@ class Phabric
      */
     public function setEntityName($name)
     {
-        
+        $this->entityName = $name;
     }
 
     /**
@@ -162,25 +188,6 @@ class Phabric
     }
 
     /**
-     * Registers a function to translate data from the format used in a gherkin
-     * table to the data to be entered into the DB.
-     *
-     * @param string $name        This should match with the name of the column after name translation.
-     * @param lambda $translation This should be a lambda. It should take one argument: the data to be transformed.
-     *
-     * @return void
-     */
-    public function registerNamedDataTranslation($name, $translation)
-    {
-        if(!\is_callable($translation))
-        {
-            throw new \InvalidArgumentException('Translation passed to ' . __METHOD__ . ' is not callable');
-        }
-        
-        $this->dataTranslationFunctions[$name] = $translation;
-    }
-
-    /**
      * Creates an entity based on data rom a gherkin table.
      * By default the data is augmented by the default values supplied.
      *
@@ -210,11 +217,11 @@ class Phabric
             {
                 if(isset($this->dataTranslations[$colName]))
                 {
-                    var_dump($colName, $colValue);
-                    $colValue = $this->dataTranslationFunctions[$this->dataTranslations[$colName]]($colValue);
+                    $fn = $this->bus->getNamedDataTranslation($this->dataTranslations[$colName]);
+                    $colValue = $fn($colValue);
                 }
             }
-            //var_dump($row);
+
             $this->db->insert($this->tableName, $row);
         }
     }
