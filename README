@@ -1,6 +1,31 @@
 Phabric - A tool that translates Gherkin Tables into database inserts / updates.
 
+It's for use with the BDD library Behat which can be found at: http://behat.org/
+
+The aim of this project is to allow the user to define fixtures 'on the fly'
+without having to undergo the painful process of maintaining an SQL file used to 
+drive Behat test suites. 
+
 Install
+
+Currently the only supported method of installing Phabric is via git.
+
+Clone the git hub repository onto your local machine.
+
+git clone git@github.com:benwaine/Phabric.git
+
+Change directory into the newley cloned repository.
+
+cd Phabric/
+
+Phabric has a number of dependencies these can be met by initializing the following submodules: 
+
+git submodule init lib/Vendor/mockery/
+git submodule init lib/Vendor/Doctrine/
+git submodule update --recursive
+
+Config
+
 
 
 Use
