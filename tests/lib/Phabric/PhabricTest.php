@@ -24,8 +24,13 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->mockedConnection = m::mock('\Doctrine\DBAL\Connection');
+        
+        $this->mockedConnection->shouldReceive('lastInsertId')
+                               ->andReturn(12);
+        
         $this->mockedBus = m::mock('\Phabric\Bus');
         $this->object = new \Phabric\Phabric($this->mockedConnection, $this->mockedBus);
+       
     }
 
     /**
@@ -140,14 +145,6 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         $this->object->create($tableData);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testRegisterNamedDataTranslationInvalidCallable()
-    {
-        $this->object->registerNamedDataTranslation('test', 'test');
-    }
-
     public function testCreateWithMultipleFeaturesEnabled()
     {
         $tableData = array(
@@ -185,6 +182,31 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         $this->object->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
 
         $this->object->create($tableData);
+    }
+    
+    public function testGetNamedItemId()
+    {
+        $tableData = array(
+            array('name', 'datetime', 'venue', 'description'),
+            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
+        );
+
+        $expectedInsert =  array('name' => 'PHPNW',
+                                 'datetime' => '2011-10-08 09:00:00',
+                                 'venue' => 'Ramada Hotel',
+                                 'description' => 'A Great Conf!');
+
+        $this->mockedConnection->shouldReceive('insert')
+                               ->with('Event', $expectedInsert)
+                               ->once();
+
+        $this->object->setTableName('Event');
+
+        $this->object->create($tableData);
+        
+        $this->assertInternalType('integer', $this->object->getNamedItemId('PHPNW'));
+        $this->assertEquals(12, $this->object->getNamedItemId('PHPNW'));
+        
     }
 
 }

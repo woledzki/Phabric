@@ -55,7 +55,7 @@ class FeatureContext extends BehatContext
         $docComLoader->register();
 
         $config = new \Doctrine\DBAL\Configuration();
-
+        
         self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
                     'dbname' => $parameters['database']['dbname'],
                     'user' => $parameters['database']['username'],
@@ -63,6 +63,8 @@ class FeatureContext extends BehatContext
                     'host' => $parameters['database']['host'],
                     'driver' => $parameters['database']['driver'],
                 ));
+        
+        
         
         pFactory::setDatabaseConnection(self::$db);
 
@@ -85,7 +87,7 @@ class FeatureContext extends BehatContext
      */
     public function functionsetDB()
     {
-        $sql = file_get_contents(__DIR__ . '/../../sql/behat-demo-dump.sql');
+        $sql = file_get_contents(__DIR__ . '/../../fixture.sql');
         self::$db->query($sql);
     }
 

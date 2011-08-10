@@ -12,21 +12,24 @@ Currently the only supported method of installing Phabric is via git.
 
 Clone the git hub repository onto your local machine.
 
-git clone git@github.com:benwaine/Phabric.git
+* git clone git@github.com:benwaine/Phabric.git
 
 Change directory into the newley cloned repository.
 
-cd Phabric/
+* cd Phabric/
 
 Phabric has a number of dependencies these can be met by initializing the following submodules: 
 
-git submodule init lib/Vendor/mockery/
-git submodule init lib/Vendor/Doctrine/
-git submodule update --recursive
+* git submodule init lib/Vendor/mockery/
+* git submodule init lib/Vendor/Doctrine/
+* git submodule update --recursive
 
-Config
+Then Doctrines submodules
+
+* cd lib/Vendor/Doctrine/
+
+* git submodule init lib/vendor/doctrine-common/
+* git submodule init --recursive
 
 
-
-Use
 

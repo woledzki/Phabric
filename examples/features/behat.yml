@@ -3,10 +3,10 @@ default:
     class: 'FeatureContext'
     parameters:
       database:
-        username: 'behat-demo'
-        password: 'behat-demo'
+        username: 'root'
+        password: ''
         dbname:   'behat-demo'
-        host:     'localhost'
+        host:     '127.0.0.1'
         driver:   'pdo_mysql'
       baseurl: 'http://behat-demo.dev/'
       registry:

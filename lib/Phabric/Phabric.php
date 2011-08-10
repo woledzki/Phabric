@@ -61,6 +61,13 @@ class Phabric
      * @var Phabric\Bus
      */
     protected $bus;
+    
+    /**
+     * A registry of the items created 
+     * 
+     * @var array 
+     */
+    protected $namedItemsNameIdMap;
 
     /**
      * Initialises an instance of the Phabric class.
@@ -216,6 +223,10 @@ class Phabric
             }
 
             $this->db->insert($this->tableName, $row);
+            
+            $firstElement = reset($row);
+            
+            $this->namedItemsNameIdMap[$firstElement] = $this->db->lastInsertId();
         }
     }
 
@@ -268,6 +279,25 @@ class Phabric
     public function update($name, $data)
     {
         
+    }
+        
+    /**
+     * Gets the ID of a named item inserted into the database previously.
+     * 
+     * @param string $name
+     * 
+     * @return integer|false 
+     */
+    public function getNamedItemId($name)
+    {
+        if(isset($this->namedItemsNameIdMap[$name]))
+        {
+            return $this->namedItemsNameIdMap[$name];
+        }
+        else
+        {
+            return false;
+        }
     }
 
 }

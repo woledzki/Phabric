@@ -4,6 +4,11 @@ require_once __DIR__ . '/../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/D
 
 require_once __DIR__ . '/../lib/Vendor/mockery/library/Mockery/Loader.php';
 
+// Mockery Autoloader required mockery to be on the include path.
+
+set_include_path(implode(PATH_SEPARATOR, array(get_include_path(),
+                                               __DIR__ . '/../lib/Vendor/mockery/library/')));
+
 $loader = new \Mockery\Loader;
 $loader->register();
 
