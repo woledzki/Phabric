@@ -218,7 +218,7 @@ class Phabric
                 if(isset($this->dataTranslations[$colName]))
                 {
                     $fn = $this->bus->getNamedDataTranslation($this->dataTranslations[$colName]);
-                    $colValue = $fn($colValue);
+                    $colValue = $fn($colValue, $this->bus);
                 }
             }
 
@@ -228,6 +228,8 @@ class Phabric
             
             $this->namedItemsNameIdMap[$firstElement] = $this->db->lastInsertId();
         }
+        
+
     }
 
     /**

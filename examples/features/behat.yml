@@ -16,11 +16,30 @@ default:
       Phabric:
         entities:
           event:
-            tableName: 'Event'
+            tableName: 'event'
             entityName: 'Event'
             nameTranslations:
               Date: datetime
               Desc: description
             dataTranslations:
               datetime: UKTOMYSQLDATE
+          session:
+            tableName: 'session'
+            entityName: 'Session'
+            nameTranslations:
+              Session Code: session_code
+          attendee:
+            tableName: 'attendee'
+            entityName: 'Attendee'
+          vote:
+            tableName: 'vote'
+            entityName: 'Vote'
+            nameTranslations:
+              Attendee: attendee_id
+              Session: session_id
+            dataTranslations:
+              attendee_id: ATTENDEELOOKUP
+              session_id: SESSIONLOOKUP
+              vote: UPDOWNTOINT
+            
           
