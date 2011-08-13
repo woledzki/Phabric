@@ -8,35 +8,6 @@ It's for use with the BDD library Behat which can be found at: http://behat.org/
 The aim of this project is to allow the user to define fixtures 'on the fly' 
 using Gherkin tables without having to undergo the painful process of 
 maintaining an SQL file used to drive Behat test suites.
- 
-
-Install
-=======
-
-Currently the only supported method of installing Phabric is via git.
-
-Clone the git hub repository onto your local machine.
-
-* git clone git@github.com:benwaine/Phabric.git
-
-Change directory into the newley cloned repository.
-
-* cd Phabric/
-
-Phabric has a number of dependencies these can be met by initializing the 
-following submodules: 
-
-* git submodule init lib/Vendor/mockery/
-* git submodule init lib/Vendor/Doctrine/
-* git submodule update --recursive
-
-Then Doctrines submodules
-
-* cd lib/Vendor/Doctrine/
-
-* git submodule init lib/vendor/doctrine-common/
-* git submodule init --recursive
-
 
 Introduction
 ============
@@ -56,7 +27,6 @@ explicitly stated in a scenario.
 The solution we settled on was to load an initial fixture containing just the 
 basic DB structure and to define all the data in Gherkin tables within the 
 scenarios of our test.
-
 
 Enter Phabric... 
 
@@ -94,9 +64,86 @@ readable and maintainable way. It should facilitate behaviour driven development
 as once the initial creator steps have been anyone will be able to mark up 
 entities in your system (tester and BA's included!).  
 
+Preview
+------- 
+
+The documentation below outlines how to configure and use Phabric. Here is a 
+quick preview of whats achievable when Phabric is installed, configured and 
+running:
+
+The scenario:
+
+<pre>
+
+Scenario:
+    Given The following events exist
+    | Name  | Date             | Venue                  | Desc             |
+    | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
+    | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
+
+</pre>
+
+*Note:* The example contains name and data translations.
+
+The step:
+
+    /**
+     * @Given /^The following events exist$/
+     */
+    public function theFollowingEventsExist(TableNode $table) {
+        $tableData = $table->getRows();
+
+        $eventPh = $this->phabricBus->getEntity('event');
+        $eventPh->create($tableData);
+    }
+
+
+The database table after data creation: 
+
+<pre>
+    | name  | datetime            | venue                  | description      |
+    | PHPNW | 2011-10-08 09:00:00 | Ramada Hotel           | An awesome conf! |
+    | PHPUK | 2012-02-27 09:00:00 | London Business Center | Quite good conf. |
+</pre>
+
+*Note:* Gherkin column names mapped to database coulm names and some data 
+(datetime) transformed.
+
+For those keen on doing rather than reading there are working examples in the 
+'examples' folder. See section below for instructions on setting up the 
+examples.
+
 
 DOCS
 ====
+
+Install
+-------
+
+Currently the only supported method of installing Phabric is via git.
+
+Clone the git hub repository onto your local machine.
+
+* git clone git@github.com:benwaine/Phabric.git
+
+Change directory into the newley cloned repository.
+
+* cd Phabric/
+
+Phabric has a number of dependencies these can be met by initializing the 
+following submodules: 
+
+* git submodule init lib/Vendor/mockery/
+* git submodule init lib/Vendor/Doctrine/
+* git submodule update --recursive
+
+Then Doctrines submodules
+
+* cd lib/Vendor/Doctrine/
+
+* git submodule init lib/vendor/doctrine-common/
+* git submodule init --recursive
+
 
 Setting Up Phabric 
 ------------------
@@ -190,10 +237,10 @@ Phabric Entities
 A Phabric entity encapsulates the mapping between a Gherkin table and a database 
 table.
 
-There are two ways to configure a Phabric entity: Programmatically and by using a
-Configuration file. This documentation will show both methods. Those who prefer
-cleaner feature files with less set up should consider using the configuration 
-based approach.
+There are two ways to configure a Phabric entity: Programmatically and by using 
+a Configuration file. This documentation will show both methods. Those who 
+prefer cleaner feature files with less set up should consider using the 
+configuration based approach.
 
 The Phabric Factory Class & Phabric Bus
 ---------------------------------------
@@ -281,7 +328,7 @@ Column Name Translations
 ------------------------
 
 The goal of column name translations is to change often ugly looking database 
-column names to human readbable and business friends names.
+column names to human readable and business friends names.
 
 In this example we want to change column names like 'ev_name' and 
 'ev_description' to the more friendly 'Name' and 'Description'.
@@ -307,9 +354,9 @@ Column Data Translations
 
 In the same way it is preferable to represent column names as human readable and
 business friendly as possible we should also represent the data in the column in
-the same mannor. 
+the same manner. 
 
-In this example it is preferable to use and english representation of the date 
+In this example it is preferable to use and English representation of the date 
 rather than a MySQL date time (08/10/2011 9:00 > 2011-10-08 09:00:00). Also
 in the Sold Out field 'YES' and 'NO' can be used to represent '0' and '1'.
 
@@ -407,5 +454,228 @@ with a data translation) and include the column in the Gherkin table.
 </pre>
 
 
+Inserting Data
+==============
+
+With a Phabric entity set up it's now possible to translate data from a Gherkin
+table into the database. 
+
+
+Inserting Unrelated Data (Basic Insert)
+---------------------------------------
+
+From a Behat feature file:
+
+<pre>
+
+Scenario:
+    Given The following events exist
+    | Name  | Date             | Venue                  | Desc             |
+    | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
+    | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
+
+</pre>
+
+And in the corresponding Behat step:
+
+    
+    /**
+     * @Given /^The following events exist$/
+     */
+    public function theFollowingEventsExist(TableNode $table) {
+        
+        // Get the Raw gherkin data in array form.
+        $tableData = $table->getRows();
+        
+
+        // Get the event entity from the Phabric bus.
+        $eventPh = $this->phabricBus->getEntity('event');
+        
+        // Pass in the raw table data to the create method to create a DB record
+        $eventPh->create($tableData);
+    }
+
+
 Relational Data
 ---------------
+
+Phabric supports the entry of relational data. For example linking multiple 
+attendees to an event.
+
+Internally Phabric keeps track of the database entries it makes. It maps the 
+last inserted ID returned from the database to the value of the left most column.
+
+It's possible to access this id by using the 'getNamedItemId()' method on the 
+Phabric entity. Id's can be substituted for entity names by registering a 
+standard data translation.  
+
+*Note:* When using relational data you should ensure the left most column is 
+consistently the same. In this instance 'Name' is the left most column and ID's 
+are mapped against this value (EG -'PHPNW' => 1).
+
+In the following example attendees are asked to vote for their favorite session.
+The vote database table looks like this:
+
+| id | session_id | attendee_id | vote |
+| 1  | 1          | 1           | 1    |
+
+*Note: * The following example just shows relational data functionality. Other 
+translations are required on names and data for the example to work.
+ 
+From a Behat feature file: 
+
+<pre>
+
+Scenario: 
+    Given the following sessions exist
+    | Session Code | name                  | time  | description                               |
+    | BDD          | BDD with behat        | 12:50 | Test driven behaviour development is cool |
+    | CI           | Continous Integration | 13:30 | Integrate this!                           |
+    And the following attendees exist
+    | name                  |
+    | Jack The Lad          |
+    | Simple Simon          |
+    | Peter Pan             |
+    And the following votes exist
+    | Attendee     | Session | Vote | 
+    | Jack The Lad | BDD     | UP   |
+    | Simple Simon | BDD     | UP   |
+    | Peter Pan    | BDD     | UP   |
+    | Jack The Lad | CI      | UP   |
+    | Simple Simon | CI      | UP   |
+    | Peter Pan    | CI      | DOWN |
+
+</pre>
+
+
+When setting up the Phabric bus data translations are registered for translating
+Attendee names and session names with there ID's:
+
+    $this->phabricBus->registerNamedDataTranslation(
+            'ATTENDEELOOKUP', function($attendeeName, $bus) {
+                $ent = $bus->getEntity('attendee');
+
+                $id = $ent->getNamedItemId($attendeeName);
+
+                return $id;
+            });
+
+    $this->phabricBus->registerNamedDataTranslation(
+            'SESSIONLOOKUP', function($sessionName, $bus) {
+                $ent = $bus->getEntity('session');
+
+                $id = $ent->getNamedItemId($sessionName);
+
+                return $id;
+            });
+
+And the name and data translations are registered with the vote entity:
+
+    $vote->setNameTranslations(array(
+                                'Session' => 'session_id',
+                                'Attendee' => 'attendee_id'));
+
+    $vote->setDataTranslations(array(
+                                'session_id' => 'SESSIONLOOKUP',
+                                'attendee_id' => 'ATTENDEELOOKUP'));
+
+The create() method is used as in the previous example:
+
+    /**
+     * @Given /^the following votes exist$/
+     */
+    public function theFollowingVotesExist(TableNode $table)
+    {
+        $tableData = $table->getRows();
+
+        $attePh = $this->phabricBus->getEntity('vote');
+        $attePh->create($tableData);
+    }
+
+
+Configuration Approach
+======================
+
+The previous examples have shown how to configure a Phabric entity 
+programmatically. While this is effective it's also very verbose. Phabric 
+configuration can be stored in a test suites 'behat.yml' file and used to 
+succinctly create and configure entities.
+
+An example of a 'behat.yml' configuration file with Phabric config in:
+
+<pre>
+
+default:
+  context:
+    class: 'FeatureContext'
+    parameters:
+      database:
+        username: 'root'
+        password: ''
+        dbname:   'behat-demo'
+        host:     '127.0.0.1'
+        driver:   'pdo_mysql'
+      baseurl: 'http://behat-demo.dev/'
+      registry:
+        baseurl: 'http://behat-demo.dev/'
+        eventsResourceUri: events
+        eventsResourceMethod: GET
+      Phabric:
+        entities:
+          event:
+            tableName: 'event'
+            entityName: 'Event'
+            nameTranslations:
+              Date: datetime
+              Desc: description
+            dataTranslations:
+              datetime: UKTOMYSQLDATE
+          session:
+            tableName: 'session'
+            entityName: 'Session'
+            nameTranslations:
+              Session Code: session_code
+          attendee:
+            tableName: 'attendee'
+            entityName: 'Attendee'
+          vote:
+            tableName: 'vote'
+            entityName: 'Vote'
+            nameTranslations:
+              Attendee: attendee_id
+              Session: session_id
+            dataTranslations:
+              attendee_id: ATTENDEELOOKUP
+              session_id: SESSIONLOOKUP
+              vote: UPDOWNTOINT
+
+</pre>    
+
+By putting Phabric config under the FeatureContext>Parameters section it is 
+available in the $parameters array of the Behat FeatureContext constructor.
+This is where all the configuration of the Phabric bus and entities occurs.
+
+As you can see name and data translations, the database table an entity maps to 
+and default values can be included in config.
+
+In the constructor of the FeatureContext class:
+
+    $event = pFactory::createPhabric('event', $parameters['Phabric']['entities']['event']);
+    $attendee = pFactory::createPhabric('attendee', $parameters['Phabric']['entities']['attendee']);
+    $session = pFactory::createPhabric('session', $parameters['Phabric']['entities']['session']);
+    $vote = pFactory::createPhabric('vote', $parameters['Phabric']['entities']['vote']);
+
+The factor methods return the Phabric entity instances but they can also be 
+retrieved in step methods by using the bus:
+
+    $eventPh = $this->phabricBus->getEntity('event');
+
+Examples
+========
+
+Some basic set up is required to run the examples. 
+
+* Set up a database compatible with the database config in the 'behat.yml'
+
+
+ 
