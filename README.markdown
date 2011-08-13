@@ -237,9 +237,9 @@ Database Table:
 
 <pre>
 
-| id | ev_name | ev_desc           | ev_date             | ev_soldout |
-| 1  | PHPNW   | A hella cool gig! | 2011-10-08 09:00:00 | NO         |
-| 2  | PHPUK   | A great event!    | 2012-02-26 09:00:00 | NO         |
+| id | ev_name | ev_desc           | ev_date             | ev_disp |
+| 1  | PHPNW   | A hella cool gig! | 2011-10-08 09:00:00 | 1       |
+| 2  | PHPUK   | A great event!    | 2012-02-26 09:00:00 | 0       |
 
 </pre>
 
@@ -254,11 +254,11 @@ Given the following event exists:
 | PHPUK | A great event!    | 26/02/2011 9:00 |
 
 </pre>
-*Note*: The column ev_sold out will have a default value of 'No' unless 
+*Note*: The column 'ev_disp' will have a default value of 1 unless 
 otherwise specified.
 
 The table above models the data in a more business friendly way and abstracts 
-away the underlying database implimentation. Testers, BA's and developers can 
+away the underlying database implementation. Testers, BA's and developers can 
 now concentrate on modeling the data in the context of the business case rather 
 than the database. 
 
@@ -280,6 +280,132 @@ sections.
 Column Name Translations
 ------------------------
 
+The goal of column name translations is to change often ugly looking database 
+column names to human readbable and business friends names.
+
+In this example we want to change column names like 'ev_name' and 
+'ev_description' to the more friendly 'Name' and 'Description'.
+
 First create an entity:
 
     $event = pFactory::createPhabric('event');
+
+The register some column name translations:
+
+    $event->setNameTranslations(array(
+                                'Name' => 'ev_name',
+                                'Description' => 'ev_description',
+                                'Start Date' => 'ev_date',
+                                'Displayed' => 'ev_disp'
+                                ));
+
+** Important: Column Name translations get applied first. When referencing 
+columns in subsequent methods / configs use the database column name ** 
+
+Column Data Translations
+------------------------
+
+In the same way it is preferable to represent column names as human readable and
+business friendly as possible we should also represent the data in the column in
+the same mannor. 
+
+In this example it is preferable to use and english representation of the date 
+rather than a MySQL date time (08/10/2011 9:00 > 2011-10-08 09:00:00). Also
+in the Sold Out field 'YES' and 'NO' can be used to represent '0' and '1'.
+
+This is achieved by registering closures with the Phabric bus (so every Phabric 
+instance can share the functionality defined in them). The closures are 
+registered against a name. The closure name and the name of the column to be 
+translated is then registered with the entity representing the table. 
+
+First get the Phabric bus:
+    
+    // In a FeatureContext Constructor
+    $this->phabricBus = pFactory::getBus(); 
+
+Register a closure with the bus a name. Conventionally names are in CAPS.
+The closure accepts the data from a column and returns its translated form. 
+
+    $this->phabricBus->registerNamedDataTranslation(
+                'UKTOMYSQLDATE', function($date) {
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
+                    return $date->format('Y-m-d H:i:s');
+                }
+        );
+
+Then register the translation(s) with the entity.
+
+    $event->setDataTranslations(array(
+                                'ev_date' => 'UKTOMYSQLDATE'
+                                ));
+
+*Note* The use of the real database column name when registering data 
+translation closures.
+
+** Important: Registration of closures with the bus and registering translations
+can be carried out in any order. However, remember that bus registration must 
+occur before data translation actually occurs. **
+
+Column Default Values
+---------------------
+
+Default values can be useful to reduce the number of columns in the Gherkin 
+representation of the database table data. 
+
+In this example the 'ev_disp' column in the database is used to indicate if a 
+an event should be displayed on the fron end of the application. By default we 
+would like to set this to 1 (events should be displayed). We can always override 
+this by including the column in our Gherkin.
+
+Defaults are set using an array of database column names and values:
+
+
+    $event->setDefaults(array(
+                        'ev_disp' => 1
+                        ));
+
+
+To override the default ensure a name translation is set up (optionally 
+with a data translation) and include the column in the Gherkin table.
+
+    $event->setNameTranslations(array(
+                                'Name' => 'ev_name',
+                                'Description' => 'ev_description',
+                                'Start Date' => 'ev_date',
+                                'Displayed' => 'ev_disp'
+                                ));
+    
+    $this->phabricBus->registerNamedDataTranslation(
+                'YESNOFLAG', function($ynFlag) {
+                    switch($ynFlag) {
+                    case 'YES':
+                        return 1;
+                    case 'NO':
+                        return 0;
+                    default:
+                        throw new \Exception('Invalid Y/N Flag. Use: YES or NO);
+                    } 
+                },
+                'UKTOMYSQLDATE', function($date) {
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
+                    return $date->format('Y-m-d H:i:s');
+                }
+        );
+    
+    $event->setDataTranslations(array(
+                                'ev_date' => UKTOMYSQLDATE
+                                'ev__disp' => 'YESNOFLAG'
+                                ));
+
+
+<pre>
+
+| Name  | Description       | Start Date      | Displayed |
+| PHPNW | A hella cool gig! | 08/10/2011 9:00 | YES       |
+| PHPUK | A great event!    | 26/02/2011 9:00 | NO        |
+
+</pre>
+
+
+Relational Data
+---------------
