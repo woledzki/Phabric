@@ -15,6 +15,16 @@ require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Framework/Assert/Functions.php';
 require_once __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php';
 
+$phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
+$phaLoader->register();
+
+$docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
+$docLoader->register();
+
+$docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
+$docComLoader->register();
+
+
 /**
  * Features context.
  */
@@ -41,16 +51,7 @@ class FeatureContext extends BehatContext {
      * @param   array   $parameters     context parameters (set them up through behat.yml)
      */
     public function __construct(array $parameters) {
-
-        $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
-        $phaLoader->register();
-
-        $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
-        $docLoader->register();
-
-        $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
-        $docComLoader->register();
-
+        
         $config = new \Doctrine\DBAL\Configuration();
 
         self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
