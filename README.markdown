@@ -158,26 +158,32 @@ and MSSQL.
 **Autoloading**
 Classes are loaded using the Doctrine Projects autoloader.
 
-This needs to be included and set up: 
+Doctrine and Phabric Classes need to be registered with the auto loader in the 
+Feature Contexts File:
 
-
+```PHP
     require_once __DIR__ . '/PATH/TO/PHABRIC/lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php';
 
+    $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
+    $phaLoader->register();
 
-Doctrine and Phabric Classes need to be registered with the auto loader in the 
-Feature Contexts Constructor:
+    $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
+    $docLoader->register();
 
+    $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
+    $docComLoader->register();
+
+    /**
+     * Features context.
+     */
+    class FeatureContext extends BehatContext {
+    
     public function __construct(array $parameters) {
 
-        $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
-        $phaLoader->register();
-
-        $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
-        $docLoader->register();
-
-        $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
-        $docComLoader->register();
     }
+
+    // Rest of feature file.... 
+```PHP
 
 A Doctrine DBAL connection (database connection class) needs to be created and assigned the Phabric\Factory,
 this class manages your interactions with Phabric. Database connection parameters
@@ -201,15 +207,6 @@ Creating the DBAL Connections and setting it as the database connection used by
 Phabric:
 
     public function __construct(array $parameters) {
-
-        $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
-        $phaLoader->register();
-
-        $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
-        $docLoader->register();
-
-        $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
-        $docComLoader->register();
 
         $config = new \Doctrine\DBAL\Configuration();
 
