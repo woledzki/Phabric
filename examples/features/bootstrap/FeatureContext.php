@@ -9,7 +9,6 @@ use Behat\Gherkin\Node\PyStringNode,
     Behat\Behat\Event\SuiteEvent;
 use Phabric\Factory as pFactory;
 use Phabric\Phabric;
-use Phabric\Bus;
 
 require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Framework/Assert/Functions.php';
@@ -62,16 +61,12 @@ class FeatureContext extends BehatContext {
                     'driver' => $parameters['database']['driver'],
                 ));
 
+        $this->phabricBus = new Phabric(self::$db);
 
-
-        pFactory::setDatabaseConnection(self::$db);
-
-        $event = pFactory::createPhabric('event', $parameters['Phabric']['entities']['event']);
-        $attendee = pFactory::createPhabric('attendee', $parameters['Phabric']['entities']['attendee']);
-        $session = pFactory::createPhabric('session', $parameters['Phabric']['entities']['session']);
-        $vote = pFactory::createPhabric('vote', $parameters['Phabric']['entities']['vote']);
-
-        $this->phabricBus = pFactory::getBus();
+        $event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
+        $attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
+        $session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
+        $vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
         $this->phabricBus->registerNamedDataTranslation(
                 'UKTOMYSQLDATE', function($date) {

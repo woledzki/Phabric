@@ -161,7 +161,7 @@ Classes are loaded using the Doctrine Projects autoloader.
 Doctrine and Phabric Classes need to be registered with the auto loader in the 
 Feature Contexts File:
 
-```PHP
+
     require_once __DIR__ . '/PATH/TO/PHABRIC/lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php';
 
     $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
@@ -183,7 +183,7 @@ Feature Contexts File:
     }
 
     // Rest of feature file.... 
-```PHP
+
 
 A Doctrine DBAL connection (database connection class) needs to be created and assigned the Phabric\Factory,
 this class manages your interactions with Phabric. Database connection parameters
@@ -206,6 +206,8 @@ default:
 Creating the DBAL Connections and setting it as the database connection used by 
 Phabric:
 
+    protected $phabricBus;
+
     public function __construct(array $parameters) {
 
         $config = new \Doctrine\DBAL\Configuration();
@@ -220,7 +222,7 @@ Phabric:
 
 
 
-        \Phabric\Factory::setDatabaseConnection(self::$db);
+        $this->phabricBus = new Bus(self::$db);
 
     }
 
@@ -228,8 +230,19 @@ This should be all the setup required to use Phabric. We can now define Phabric
 entities, these represent the mapping between Gherkin tables of data and data in
 our database.
 
+
+The Phabric Class
+-----------------
+
+The Phabric object handles interaction with all the 'entities' (Gherkin table > 
+db table mappings) created when using Phabric.
+It accepts a database connection as it's only argument. It should be created in 
+the constructor of the FeatureContext class and saved to a member variable (as 
+in the example above).
+
+
 Phabric Entities
-================
+----------------
 
 A Phabric entity encapsulates the mapping between a Gherkin table and a database 
 table.
@@ -239,33 +252,30 @@ a Configuration file. This documentation will show both methods. Those who
 prefer cleaner feature files with less set up should consider using the 
 configuration based approach.
 
-The Phabric Factory Class & Phabric Bus
----------------------------------------
+Programmatically: 
+    
+    // Note: no second config parameter passed
+    $event = $this->phabricBus->createEntity('event');
+    
+    $event->setTableName('event');
+    
+    // @todo more entity config. @see The Docs bellow
 
-The bus is an object which is injected into each instance of a Phabric entity.
-It enables communication between each entity in a clean and testable way. 
-
-A factory is used to obtain Phabric instances, in the background the bus is 
-configured and injected each time the factory is is used to obtain an entity.
-
-Before using the factory you must set the database connection to use 
-(as in the previous example and assuming autoloading is set up).
-
-
-    $config = new \Doctrine\DBAL\Configuration();
-
-    self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
-                'dbname' => $parameters['database']['dbname'],
-                'user' => $parameters['database']['username'],
-                'password' => $parameters['database']['password'],
-                'host' => $parameters['database']['host'],
-                'driver' => $parameters['database']['driver'],
-            ));
+And Using configuration:
+    
+    // Note: The config array is pulled from the $parameters argument passed
+    // into the FeatureContext constructor method.
+    $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
 
 
+General Principles
+------------------
 
-    \Phabric\Factory::setDatabaseConnection(self::$db);
-
+* The Phabric object is set up in the FeatureContext constructor.
+* Phabric entities are created via the Phabric class and configured in the 
+FeatureContext constructor.
+* Entities are retrieved in step definitions and are used to insert and update 
+data specified in Gherkin tables in the scenario.
 
 Example Domain
 --------------
@@ -657,10 +667,10 @@ and default values can be included in config.
 
 In the constructor of the FeatureContext class:
 
-    $event = pFactory::createPhabric('event', $parameters['Phabric']['entities']['event']);
-    $attendee = pFactory::createPhabric('attendee', $parameters['Phabric']['entities']['attendee']);
-    $session = pFactory::createPhabric('session', $parameters['Phabric']['entities']['session']);
-    $vote = pFactory::createPhabric('vote', $parameters['Phabric']['entities']['vote']);
+    $event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
+    $attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
+    $session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
+    $vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
 The factor methods return the Phabric entity instances but they can also be 
 retrieved in step methods by using the bus:

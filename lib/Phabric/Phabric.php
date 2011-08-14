@@ -1,306 +1,136 @@
 <?php
 namespace Phabric;
-use Phabric\Bus;
-use Doctrine\DBAL\Connection;
 /**
- * Phabric base class. Encapsulates the basic single table create and
- * update behaviour used to translate Gherkin tables into database entries.
+ * The Phabric bus manages the registration of translations for use on all
+ * subscribing instances of Phabric. It also allows the creation of relational
+ * data by providing one instance of Phabric with access to all others via a single interface.
  *
- * @package Phabric
- * @author  Ben Waine <ben@ben-waine.co.uk>
+ * @package    Phabric
+ * @author     Ben Waine <ben@ben-waine.co.uk>
  */
 class Phabric
 {
     /**
-     * Entity Name - Should be human readbale business term.
-     *
-     * @var string
-     */
-    protected $entityName;
-
-    /**
-     * Table Name - as in the database
-     *
-     * @var string
-     */
-    protected $tableName;
-
-    /**
-     * Tranlations - An array with human readable Gherkin table headers mapped to db columns.
+     * An array of registered lambda functions.
      *
      * @var array
      */
-    protected $nameTranslations = array();
+    protected $registeredDataTranslations = array();
 
     /**
-     * Data Translations - An array of database col names and transformation types.
+     * An array of registered phabric instances.
      *
      * @var array
      */
-    protected $dataTranslations = array();
-
-    /**
-     * Default values to augment Gherkin table data with.
-     *
-     * @var array
-     */
-    protected $defaults;
-
-    /**
-     * DBAL Instance.
-     *
-     * @var Doctrine\DBAL\Connection
-     */
-    protected $db;
-
-    /**
-     * An instance of the Phabric Bus.
-     * Used as a point of access to other instances of phabric representing
-     * other database tables.
-     *
-     * @var Phabric\Bus
-     */
-    protected $bus;
+    protected $registeredPhabricEntities = array();
     
     /**
-     * A registry of the items created 
+     * Datasource used to insert / update records into.
      * 
-     * @var array 
+     * @var \Doctrine\Connection
      */
-    protected $namedItemsNameIdMap;
+    protected $datasource;
 
     /**
-     * Initialises an instance of the Phabric class.
+     * Initialises an instance of the Phabric Bus class.
      *
-     * @param Doctrine\DBAL\Connection $db
-     * @param array                    $config
-     *
+     * @param $ds The Datasource
+     * 
+     * @return void
      */
-    public function __construct(Connection $db, Bus $bus, $config = null)
+    public function __construct($ds)
     {
-        $this->db = $db;
-
-        $this->bus = $bus;
-
-        if(isset($config))
-        {
-            if(isset($config['entityName']))
-            {
-                $this->setEntityName($config['entityName']);
-            }
-
-            if(isset($config['tableName']))
-            {
-                $this->setTableName($config['tableName']);
-            }
-
-            if(isset($config['nameTranslations']))
-            {
-                $this->setNameTranslations($config['nameTranslations']);
-            }
-
-            if(isset($config['dataTranslations']))
-            {
-                $this->setDataTranslations($config['dataTranslations']);
-            }
-
-            if(isset($config['defaults']))
-            {
-                $this->setDefaults($defaults);
-            }
-        }
+        $this->datasource = $ds;
+    }
+    
+    /**
+     * Creates and registers a Phabric entity with the bus.
+     * 
+     * @param string $name   Name to register the entity with.
+     * @param array  $config Configuration array.
+     * 
+     * @return \Phabric\Entity
+     */
+    public function createEntity($name, $config = null)
+    {
+        $entity = new Entity($this->datasource, $this, $config);
+        
+        $this->registerEntity($name, $entity);
+        
+        return $entity;
     }
 
     /**
-     * Sets the instance of Phabric\Bus in use by this instance of Phabric.
+     * Registeres an lambda function against a named key for use in subscribed
+     * Phabric instances.
      *
-     * @param Bus $bus
-     *
-     * @return void.
-     * 
-     */
-    public function setBus(Bus $bus)
-    {
-        $this->bus = $bus;
-    }
-
-    /**
-     * Set the human readable name of the entity
-     * 
-     * @param string $name
+     * @param string   $name
+     * @param function $translation
      *
      * @return void
      */
-    public function setEntityName($name)
+    public function registerNamedDataTranslation($name, $translation)
     {
-        $this->entityName = $name;
+        if(!\is_callable($translation))
+        {
+            throw new \InvalidArgumentException('Translation passed to ' . __METHOD__ . ' is not callable');
+        }
+
+        $this->registeredDataTranslations[$name] = $translation;
     }
 
     /**
-     * Set the database table name for this entity.
+     * Get a named data translation for use in a subscribed phabric instance.
      *
      * @param string $name
      *
-     * @return void
+     * @return function
      */
-    public function setTableName($name)
+    public function getNamedDataTranslation($name)
     {
-        $this->tableName = $name;
-    }
-
-    /**
-     * Set the default values for this entity.
-     * These are used to 'fill in the gaps' left by the gherkin tables.
-     *
-     * @param array $defaults
-     *
-     * @return void
-     */
-    public function setDefaults(array $defaults)
-    {
-        $this->defaults = $defaults;
-    }
-
-    /**
-     * Sets the translations used to map human readable gherkin table headers
-     * to the columns in the database.
-     *
-     * @return void
-     */
-    public function setNameTranslations($translations)
-    {
-        $this->nameTranslations = $translations;
-    }
-
-    /**
-     * Sets the translations used to transform values in the gherkin text.
-     * EG - A date transformation d/m/y > Y-m-d H:i:s
-     * Note: These must map to functions registered with the Phabric\Bus
-     *
-     * @return void
-     */
-    public function setDataTranslations($translations)
-    {
-        foreach($translations as $colName => $translationName)
+        if(!isset($this->registeredDataTranslations[$name]))
         {
-            $this->dataTranslations[$colName] = $translationName;
-        }
-    }
-
-    /**
-     * Creates an entity based on data rom a gherkin table.
-     * By default the data is augmented by the default values supplied.
-     *
-     * @param array   $data        Data from a gherkin table (top row of header with subsequent rows of data)
-     * @param boolean $defaultFlag
-     *
-     * @return void
-     */
-    public function create($data, $defaultFlag = true)
-    {
-
-        $header = array_shift($data);
-
-        $this->transformHeader($header);
-        
-
-        foreach($data as &$row)
-        {
-            $row = array_combine($header, $row);
-
-            if(isset($this->defaults))
-            {
-                $this->mergeDefaults($row);
-            }
-
-            foreach($row as $colName => &$colValue)
-            {
-                if(isset($this->dataTranslations[$colName]))
-                {
-                    $fn = $this->bus->getNamedDataTranslation($this->dataTranslations[$colName]);
-                    $colValue = $fn($colValue, $this->bus);
-                }
-            }
-
-            $this->db->insert($this->tableName, $row);
-            
-            $firstElement = reset($row);
-            
-            $this->namedItemsNameIdMap[$firstElement] = $this->db->lastInsertId();
-        }
-        
-
-    }
-
-    /**
-     * Applies an column name transformations.
-     * Lower cases the column names.
-     *
-     * @param array $header
-     *
-     * @return void
-     */
-    protected function transformHeader(&$header)
-    {
-        
-        foreach($header as &$colName)
-        {
-            if(isset($this->nameTranslations[$colName]))
-            {
-                $colName = $this->nameTranslations[$colName];
-            }
+            throw new \InvalidArgumentException('Data translation function not registered');
         }
 
-        array_walk($header, function(&$value){$value = \strtolower($value);});        
+        return $this->registeredDataTranslations[$name];
     }
 
     /**
-     * Method used to merge the set default parameters with a row of data from
-     * a Gherkin table.
-     *
-     * This method should be used after an name based transformations.
+     * Registers an entity by name for retrieval later by other phabric
+     * instances.
      * 
-     * @param array $row
+     * @param string Entity name 
+     * @param Entity $phabric
      *
      * @return void
      */
-    protected function mergeDefaults(& $row)
+    protected function registerEntity($name, Entity $phabric)
     {
-        $defaultsReq = array_diff_key($this->defaults, $row);   
-        $row = array_merge($row, $defaultsReq);
+        $this->registeredPhabricEntities[$name] = $phabric;
     }
 
     /**
-     * Update a previously inserted entity with the new data from a gherkin table.
+     * Get a named Phabric entity from the bus.
      *
-     * @param string $name Human readable entity name
-     * @param array $data Gherkin table data. NB - Never augmented with default values.
+     * @param string $name 
      *
-     * @return void
+     * @throws \InvalidArgumentException
+     *
+     * @return Phabric\Entity
      */
-    public function update($name, $data)
+    public function getEntity($name)
     {
-        
-    }
-        
-    /**
-     * Gets the ID of a named item inserted into the database previously.
-     * 
-     * @param string $name
-     * 
-     * @return integer|false 
-     */
-    public function getNamedItemId($name)
-    {
-        if(isset($this->namedItemsNameIdMap[$name]))
+        if(isset($this->registeredPhabricEntities[$name]))
         {
-            return $this->namedItemsNameIdMap[$name];
+            return $this->registeredPhabricEntities[$name];
         }
         else
         {
-            return false;
+            throw new \InvalidArgumentException('Entity not registered with the bus');
         }
     }
+
 
 }
 
