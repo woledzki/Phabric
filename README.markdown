@@ -37,14 +37,14 @@ Phabric
 Phabric allows the user to mark up data for insertion into the database in a 
 scenario. Like So:
 
-<pre>
+``` gherkin
 
 Given The following events exist
     | Name  | Date             | Venue                  | Desc             |
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
     | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
 
-</pre>
+```
 
 To make the data as readable as possible Phabric supports the following:
 
@@ -62,7 +62,7 @@ to explicitly include them in the gherkin.
 The aim of these features is to assist the user in setting up a scenario in a 
 readable and maintainable way. It should facilitate behaviour driven development
 as once the initial creator steps have been anyone will be able to mark up 
-entities in your system (tester and BA's included!).  
+entities in your system (testers and BAs included!).  
 
 Preview
 ------- 
@@ -73,7 +73,7 @@ running:
 
 The scenario:
 
-<pre>
+``` gherkin
 
 Scenario:
     Given The following events exist
@@ -81,29 +81,36 @@ Scenario:
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
     | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
 
-</pre>
+```
 
 *Note:* The example contains name and data translations.
 
 The step:
 
-    /**
-     * @Given /^The following events exist$/
-     */
-    public function theFollowingEventsExist(TableNode $table) {
-        $tableData = $table->getRows();
+``` php
 
-        $eventPh = $this->phabricBus->getEntity('event');
-        $eventPh->create($tableData);
-    }
+<?php 
 
+/**
+ * @Given /^The following events exist$/
+ */
+public function theFollowingEventsExist(TableNode $table) {
+    $tableData = $table->getRows();
+
+    $eventPh = $this->phabricBus->getEntity('event');
+    $eventPh->create($tableData);
+}
+
+```
 
 The database table after data creation: 
 
 <pre>
+
     | name  | datetime            | venue                  | description      |
     | PHPNW | 2011-10-08 09:00:00 | Ramada Hotel           | An awesome conf! |
     | PHPUK | 2012-02-27 09:00:00 | London Business Center | Quite good conf. |
+
 </pre>
 
 *Note:* Gherkin column names mapped to database coulm names and some data 
@@ -161,35 +168,38 @@ Classes are loaded using the Doctrine Projects autoloader.
 Doctrine and Phabric Classes need to be registered with the auto loader in the 
 Feature Contexts File:
 
+``` php 
+<?php 
 
-    require_once __DIR__ . '/PATH/TO/PHABRIC/lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php';
+require_once __DIR__ . '/PATH/TO/PHABRIC/lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php';
 
-    $phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
-    $phaLoader->register();
+$phaLoader = new \Doctrine\Common\ClassLoader('Phabric', realpath(__DIR__ . '/../../../lib/'));
+$phaLoader->register();
 
-    $docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
-    $docLoader->register();
+$docLoader = new \Doctrine\Common\ClassLoader('Doctrine\DBAL', __DIR__ . '/../../../lib/Vendor/Doctrine/lib');
+$docLoader->register();
 
-    $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
-    $docComLoader->register();
+$docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../../../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
+$docComLoader->register();
 
-    /**
-     * Features context.
-     */
-    class FeatureContext extends BehatContext {
-    
-    public function __construct(array $parameters) {
+/**
+ * Features context.
+ */
+class FeatureContext extends BehatContext {
 
-    }
+public function __construct(array $parameters) {
 
-    // Rest of feature file.... 
+}
 
+// Rest of feature file.... 
+
+```
 
 A Doctrine DBAL connection (database connection class) needs to be created and assigned the Phabric\Factory,
 this class manages your interactions with Phabric. Database connection parameters
 should be added to your behat.yml config file.
 
-<pre>
+``` yaml
 default:
   context:
     class: 'FeatureContext'
@@ -201,30 +211,35 @@ default:
         host:     '127.0.0.1'
         driver:   'pdo_mysql'
 
- </pre>
+```
 
 Creating the DBAL Connections and setting it as the database connection used by 
 Phabric:
 
-    protected $phabricBus;
+``` php
+<?php 
 
-    public function __construct(array $parameters) {
+protected $phabricBus;
 
-        $config = new \Doctrine\DBAL\Configuration();
+public function __construct(array $parameters) {
 
-        self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
-                    'dbname' => $parameters['database']['dbname'],
-                    'user' => $parameters['database']['username'],
-                    'password' => $parameters['database']['password'],
-                    'host' => $parameters['database']['host'],
-                    'driver' => $parameters['database']['driver'],
-                ));
+    $config = new \Doctrine\DBAL\Configuration();
+
+    self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
+                'dbname' => $parameters['database']['dbname'],
+                'user' => $parameters['database']['username'],
+                'password' => $parameters['database']['password'],
+                'host' => $parameters['database']['host'],
+                'driver' => $parameters['database']['driver'],
+            ));
 
 
 
-        $this->phabricBus = new Bus(self::$db);
+    $this->phabricBus = new Bus(self::$db);
 
-    }
+}
+
+```
 
 This should be all the setup required to use Phabric. We can now define Phabric 
 entities, these represent the mapping between Gherkin tables of data and data in
@@ -253,20 +268,28 @@ prefer cleaner feature files with less set up should consider using the
 configuration based approach.
 
 Programmatically: 
-    
-    // Note: no second config parameter passed
-    $event = $this->phabricBus->createEntity('event');
-    
-    $event->setTableName('event');
-    
-    // @todo more entity config. @see The Docs bellow
+
+``` php 
+<?php     
+
+// Note: no second config parameter passed
+$event = $this->phabricBus->createEntity('event');
+
+$event->setTableName('event');
+
+// @todo more entity config. @see The Docs bellow
+
+```
 
 And Using configuration:
-    
-    // Note: The config array is pulled from the $parameters argument passed
-    // into the FeatureContext constructor method.
-    $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
 
+``` php
+    
+// Note: The config array is pulled from the $parameters argument passed
+// into the FeatureContext constructor method.
+$this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
+
+```
 
 General Principles
 ------------------
@@ -299,7 +322,7 @@ Database Table:
 
 We decide we would like to describe it using a Gherkin table as follows:
 
-<pre>
+``` gherkin
 
 Given the following event exists:
 
@@ -307,7 +330,8 @@ Given the following event exists:
 | PHPNW | A hella cool gig! | 08/10/2011 9:00 | 
 | PHPUK | A great event!    | 26/02/2011 9:00 |
 
-</pre>
+```
+
 *Note*: The column 'ev_disp' will have a default value of 1 unless 
 otherwise specified.
 
@@ -321,7 +345,12 @@ Creating an Entity
 
 With the factory set up you can now obtain Phabric entity instances like so:
 
+``` php 
+<?php 
+
     $event = pFactory::createPhabric('event', $config);
+
+```
 
 This creates and returns a entity with the name 'event'. The second argument 
 $config is optional. Supplying it will configure the instance according to the 
@@ -342,16 +371,28 @@ In this example we want to change column names like 'ev_name' and
 
 First create an entity:
 
+```php 
+
+<?php 
+
     $event = pFactory::createPhabric('event');
+
+```
 
 The register some column name translations:
 
-    $event->setNameTranslations(array(
-                                'Name' => 'ev_name',
-                                'Description' => 'ev_description',
-                                'Start Date' => 'ev_date',
-                                'Displayed' => 'ev_disp'
-                                ));
+``` php 
+
+<?php
+
+$event->setNameTranslations(array(
+                            'Name' => 'ev_name',
+                            'Description' => 'ev_description',
+                            'Start Date' => 'ev_date',
+                            'Displayed' => 'ev_disp'
+                            ));
+
+```
 
 ** Important: Column Name translations get applied first. When referencing 
 columns in subsequent methods / configs use the database column name ** 
@@ -372,26 +413,34 @@ instance can share the functionality defined in them). The closures are
 registered against a name. The closure name and the name of the column to be 
 translated is then registered with the entity representing the table. 
 
-First get the Phabric bus:
-    
-    // In a FeatureContext Constructor
-    $this->phabricBus = pFactory::getBus(); 
+Register a closure with the Phabric object by supplying a name and a function. 
+Conventionally names are in CAPS.
 
-Register a closure with the bus a name. Conventionally names are in CAPS.
 The closure accepts the data from a column and returns its translated form. 
 
-    $this->phabricBus->registerNamedDataTranslation(
-                'UKTOMYSQLDATE', function($date) {
-                    $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
-                    return $date->format('Y-m-d H:i:s');
-                }
-        );
+``` php 
+<?php 
+
+$this->phabricBus->registerNamedDataTranslation(
+            'UKTOMYSQLDATE', function($date) {
+                $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
+                return $date->format('Y-m-d H:i:s');
+            }
+    );
+
+```
 
 Then register the translation(s) with the entity.
+
+``` php 
+
+<?php 
 
     $event->setDataTranslations(array(
                                 'ev_date' => 'UKTOMYSQLDATE'
                                 ));
+
+```
 
 *Note* The use of the real database column name when registering data 
 translation closures.
@@ -413,14 +462,20 @@ this by including the column in our Gherkin.
 
 Defaults are set using an array of database column names and values:
 
+``` php 
+<?php 
 
     $event->setDefaults(array(
                         'ev_disp' => 1
                         ));
 
+```
 
 To override the default ensure a name translation is set up (optionally 
 with a data translation) and include the column in the Gherkin table.
+
+``` php 
+<?php
 
     $event->setNameTranslations(array(
                                 'Name' => 'ev_name',
@@ -451,14 +506,15 @@ with a data translation) and include the column in the Gherkin table.
                                 'ev__disp' => 'YESNOFLAG'
                                 ));
 
+```
 
-<pre>
+``` gherkin
 
 | Name  | Description       | Start Date      | Displayed |
 | PHPNW | A hella cool gig! | 08/10/2011 9:00 | YES       |
 | PHPUK | A great event!    | 26/02/2011 9:00 | NO        |
 
-</pre>
+```
 
 
 Inserting Data
@@ -473,7 +529,7 @@ Inserting Unrelated Data (Basic Insert)
 
 From a Behat feature file:
 
-<pre>
+``` gherkin
 
 Scenario:
     Given The following events exist
@@ -481,11 +537,14 @@ Scenario:
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
     | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
 
-</pre>
+```
 
 And in the corresponding Behat step:
 
-    
+``` php 
+
+<?php 
+
     /**
      * @Given /^The following events exist$/
      */
@@ -502,6 +561,7 @@ And in the corresponding Behat step:
         $eventPh->create($tableData);
     }
 
+```
 
 Relational Data
 ---------------
@@ -523,15 +583,19 @@ are mapped against this value (EG -'PHPNW' => 1).
 In the following example attendees are asked to vote for their favorite session.
 The vote database table looks like this:
 
+<pre>
+
 | id | session_id | attendee_id | vote |
 | 1  | 1          | 1           | 1    |
+
+</pre>
 
 *Note: * The following example just shows relational data functionality. Other 
 translations are required on names and data for the example to work.
  
 From a Behat feature file: 
 
-<pre>
+``` gherkin
 
 Scenario: 
     Given the following sessions exist
@@ -552,41 +616,53 @@ Scenario:
     | Simple Simon | CI      | UP   |
     | Peter Pan    | CI      | DOWN |
 
-</pre>
-
+```
 
 When setting up the Phabric bus data translations are registered for translating
 Attendee names and session names with there ID's:
 
-    $this->phabricBus->registerNamedDataTranslation(
-            'ATTENDEELOOKUP', function($attendeeName, $bus) {
-                $ent = $bus->getEntity('attendee');
+``` php 
 
-                $id = $ent->getNamedItemId($attendeeName);
+<?php 
 
-                return $id;
-            });
+$this->phabricBus->registerNamedDataTranslation(
+        'ATTENDEELOOKUP', function($attendeeName, $bus) {
+            $ent = $bus->getEntity('attendee');
 
-    $this->phabricBus->registerNamedDataTranslation(
-            'SESSIONLOOKUP', function($sessionName, $bus) {
-                $ent = $bus->getEntity('session');
+            $id = $ent->getNamedItemId($attendeeName);
 
-                $id = $ent->getNamedItemId($sessionName);
+            return $id;
+        });
 
-                return $id;
-            });
+$this->phabricBus->registerNamedDataTranslation(
+        'SESSIONLOOKUP', function($sessionName, $bus) {
+            $ent = $bus->getEntity('session');
+
+            $id = $ent->getNamedItemId($sessionName);
+
+            return $id;
+        });
+
+```
 
 And the name and data translations are registered with the vote entity:
 
-    $vote->setNameTranslations(array(
-                                'Session' => 'session_id',
-                                'Attendee' => 'attendee_id'));
+``` php 
+<?php 
 
-    $vote->setDataTranslations(array(
-                                'session_id' => 'SESSIONLOOKUP',
-                                'attendee_id' => 'ATTENDEELOOKUP'));
+$vote->setNameTranslations(array(
+                            'Session' => 'session_id',
+                            'Attendee' => 'attendee_id'));
+
+$vote->setDataTranslations(array(
+                            'session_id' => 'SESSIONLOOKUP',
+                            'attendee_id' => 'ATTENDEELOOKUP'));
+
+```
 
 The create() method is used as in the previous example:
+
+``` php 
 
     /**
      * @Given /^the following votes exist$/
@@ -599,6 +675,7 @@ The create() method is used as in the previous example:
         $attePh->create($tableData);
     }
 
+```
 
 Configuration Approach
 ======================
@@ -610,7 +687,7 @@ succinctly create and configure entities.
 
 An example of a 'behat.yml' configuration file with Phabric config in:
 
-<pre>
+``` yaml
 
 default:
   context:
@@ -656,7 +733,7 @@ default:
               session_id: SESSIONLOOKUP
               vote: UPDOWNTOINT
 
-</pre>    
+```  
 
 By putting Phabric config under the FeatureContext>Parameters section it is 
 available in the $parameters array of the Behat FeatureContext constructor.
@@ -667,15 +744,25 @@ and default values can be included in config.
 
 In the constructor of the FeatureContext class:
 
-    $event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
-    $attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
-    $session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
-    $vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
+``` php 
+<?php 
+
+$event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
+$attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
+$session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
+$vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
+
+```
 
 The factor methods return the Phabric entity instances but they can also be 
 retrieved in step methods by using the bus:
 
+```php 
+<?php 
+
     $eventPh = $this->phabricBus->getEntity('event');
+
+```
 
 Examples
 ========
