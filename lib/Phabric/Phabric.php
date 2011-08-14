@@ -55,7 +55,7 @@ class Phabric
     {
         $entity = new Entity($this->datasource, $this, $config);
         
-        $this->registerEntity($name, $entity);
+        $this->addEntity($name, $entity);
         
         return $entity;
     }
@@ -69,7 +69,7 @@ class Phabric
      *
      * @return void
      */
-    public function registerNamedDataTranslation($name, $translation)
+    public function addDataTranslation($name, $translation)
     {
         if(!\is_callable($translation))
         {
@@ -86,7 +86,7 @@ class Phabric
      *
      * @return function
      */
-    public function getNamedDataTranslation($name)
+    public function getDataTranslation($name)
     {
         if(!isset($this->registeredDataTranslations[$name]))
         {
@@ -105,7 +105,7 @@ class Phabric
      *
      * @return void
      */
-    protected function registerEntity($name, Entity $phabric)
+    protected function addEntity($name, Entity $phabric)
     {
         $this->registeredPhabricEntities[$name] = $phabric;
     }

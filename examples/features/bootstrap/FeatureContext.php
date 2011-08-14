@@ -68,14 +68,14 @@ class FeatureContext extends BehatContext {
         $session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
         $vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
-        $this->phabricBus->registerNamedDataTranslation(
+        $this->phabricBus->addDataTranslation(
                 'UKTOMYSQLDATE', function($date) {
                     $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                     return $date->format('Y-m-d H:i:s');
                 }
         );
 
-        $this->phabricBus->registerNamedDataTranslation(
+        $this->phabricBus->addDataTranslation(
                 'ATTENDEELOOKUP', function($attendeeName, $bus) {
                     $ent = $bus->getEntity('attendee');
 
@@ -84,7 +84,7 @@ class FeatureContext extends BehatContext {
                     return $id;
                 });
 
-        $this->phabricBus->registerNamedDataTranslation(
+        $this->phabricBus->addDataTranslation(
                 'SESSIONLOOKUP', function($sessionName, $bus) {
                     $ent = $bus->getEntity('session');
 
@@ -93,7 +93,7 @@ class FeatureContext extends BehatContext {
                     return $id;
                 });
 
-        $this->phabricBus->registerNamedDataTranslation(
+        $this->phabricBus->addDataTranslation(
                 'UPDOWNTOINT', function($action) {
                     $action = strtoupper($action);
                     switch ($action) {

@@ -379,7 +379,7 @@ First create an entity:
 
 ```
 
-The register some column name translations:
+The set some column name translations:
 
 ``` php 
 
@@ -408,7 +408,7 @@ In this example it is preferable to use and English representation of the date
 rather than a MySQL date time (08/10/2011 9:00 > 2011-10-08 09:00:00). Also
 in the Sold Out field 'YES' and 'NO' can be used to represent '0' and '1'.
 
-This is achieved by registering closures with the Phabric bus (so every Phabric 
+This is achieved by registering closures with the Phabric object (so every Phabric 
 instance can share the functionality defined in them). The closures are 
 registered against a name. The closure name and the name of the column to be 
 translated is then registered with the entity representing the table. 
@@ -421,7 +421,7 @@ The closure accepts the data from a column and returns its translated form.
 ``` php 
 <?php 
 
-$this->phabricBus->registerNamedDataTranslation(
+$this->phabricBus->addDataTranslation(
             'UKTOMYSQLDATE', function($date) {
                 $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                 return $date->format('Y-m-d H:i:s');
@@ -430,7 +430,7 @@ $this->phabricBus->registerNamedDataTranslation(
 
 ```
 
-Then register the translation(s) with the entity.
+Then set the translation(s) with the entity.
 
 ``` php 
 
@@ -484,7 +484,7 @@ with a data translation) and include the column in the Gherkin table.
                                 'Displayed' => 'ev_disp'
                                 ));
     
-    $this->phabricBus->registerNamedDataTranslation(
+    $this->phabricBus->addDataTranslation(
                 'YESNOFLAG', function($ynFlag) {
                     switch($ynFlag) {
                     case 'YES':
@@ -625,7 +625,7 @@ Attendee names and session names with there ID's:
 
 <?php 
 
-$this->phabricBus->registerNamedDataTranslation(
+$this->phabricBus->addDataTranslation(
         'ATTENDEELOOKUP', function($attendeeName, $bus) {
             $ent = $bus->getEntity('attendee');
 
@@ -634,7 +634,7 @@ $this->phabricBus->registerNamedDataTranslation(
             return $id;
         });
 
-$this->phabricBus->registerNamedDataTranslation(
+$this->phabricBus->addDataTranslation(
         'SESSIONLOOKUP', function($sessionName, $bus) {
             $ent = $bus->getEntity('session');
 

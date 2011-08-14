@@ -171,6 +171,7 @@ class Entity
     {
         $this->nameTranslations = $translations;
     }
+        
 
     /**
      * Sets the translations used to transform values in the gherkin text.
@@ -217,7 +218,7 @@ class Entity
             {
                 if(isset($this->dataTranslations[$colName]))
                 {
-                    $fn = $this->bus->getNamedDataTranslation($this->dataTranslations[$colName]);
+                    $fn = $this->bus->getDataTranslation($this->dataTranslations[$colName]);
                     $colValue = $fn($colValue, $this->bus);
                 }
             }

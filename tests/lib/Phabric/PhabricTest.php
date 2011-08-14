@@ -61,31 +61,31 @@ class BusTest extends \PHPUnit_Framework_TestCase
     /**
      * @todo Implement testRegisterNamedDataTranslation().
      */
-    public function testRegisterNamedDataTranslation()
+    public function testAddNamedDataTranslation()
     {
         $fn = function($a, $b) { $c = $a + $b; return $c; };
 
-        $this->object->registerNamedDataTranslation('test', $fn);
+        $this->object->addDataTranslation('test', $fn);
 
-        $this->assertEquals($fn, $this->object->getNamedDataTranslation('test'));
+        $this->assertEquals($fn, $this->object->getDataTranslation('test'));
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testRegisterNamedDataTranslationNonCallableArgument()
+    public function testAddDataTranslationNonCallableArgument()
     {
         $fn = array();
 
-        $this->object->registerNamedDataTranslation('test', $fn);
+        $this->object->addDataTranslation('test', $fn);
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testGetNamedDataTranslationNotFound()
+    public function testGetDataTranslationNotFound()
     {
-        $this->object->getNamedDataTranslation('test');
+        $this->object->getDataTranslation('test');
     }
 
     /**
