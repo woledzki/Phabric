@@ -195,7 +195,7 @@ public function __construct(array $parameters) {
 
 ```
 
-A Doctrine DBAL connection (database connection class) needs to be created and assigned the Phabric\Factory,
+A Doctrine DBAL connection (database connection class) needs to be created and injected into the Phabric object,
 this class manages your interactions with Phabric. Database connection parameters
 should be added to your behat.yml config file.
 
@@ -343,12 +343,12 @@ than the database.
 Creating an Entity
 ------------------
 
-With the factory set up you can now obtain Phabric entity instances like so:
+With the Phabric object set up you can now obtain Phabric entity instances like so:
 
 ``` php 
 <?php 
 
-    $event = pFactory::createPhabric('event', $config);
+    $event = $this->phabricBus->createPhabric('event', $config);
 
 ```
 
@@ -375,7 +375,7 @@ First create an entity:
 
 <?php 
 
-    $event = pFactory::createPhabric('event');
+   $event = $this->phabricBus->createPhabric('event', $config);
 
 ```
 
