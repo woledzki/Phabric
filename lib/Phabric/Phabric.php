@@ -16,7 +16,7 @@ class Phabric
      *
      * @var array
      */
-    protected $registeredDataTranslations = array();
+    protected $registeredDataTransformations = array();
 
     /**
      * An array of registered phabric instances.
@@ -70,14 +70,14 @@ class Phabric
      *
      * @return void
      */
-    public function addDataTranslation($name, $translation)
+    public function addDataTransformation($name, $transformation)
     {
-        if(!\is_callable($translation))
+        if(!\is_callable($transformation))
         {
             throw new \InvalidArgumentException('Translation passed to ' . __METHOD__ . ' is not callable');
         }
 
-        $this->registeredDataTranslations[$name] = $translation;
+        $this->registeredDataTransformations[$name] = $transformation;
     }
 
     /**
@@ -87,14 +87,14 @@ class Phabric
      *
      * @return function
      */
-    public function getDataTranslation($name)
+    public function getDataTransformation($name)
     {
-        if(!isset($this->registeredDataTranslations[$name]))
+        if(!isset($this->registeredDataTransformations[$name]))
         {
             throw new \InvalidArgumentException('Data translation function not registered');
         }
 
-        return $this->registeredDataTranslations[$name];
+        return $this->registeredDataTransformations[$name];
     }
 
     /**

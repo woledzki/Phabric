@@ -18,15 +18,15 @@ default:
           event:
             tableName: 'event'
             entityName: 'Event'
-            nameTranslations:
+            nameTransformations:
               Date: datetime
               Desc: description
-            dataTranslations:
+            dataTransformations:
               datetime: UKTOMYSQLDATE
           session:
             tableName: 'session'
             entityName: 'Session'
-            nameTranslations:
+            nameTransformations:
               Session Code: session_code
           attendee:
             tableName: 'attendee'
@@ -34,10 +34,10 @@ default:
           vote:
             tableName: 'vote'
             entityName: 'Vote'
-            nameTranslations:
+            nameTransformations:
               Attendee: attendee_id
               Session: session_id
-            dataTranslations:
+            dataTransformations:
               attendee_id: ATTENDEELOOKUP
               session_id: SESSIONLOOKUP
               vote: UPDOWNTOINT

@@ -48,10 +48,10 @@ Given The following events exist
 
 To make the data as readable as possible Phabric supports the following:
 
-**Column Name Translations** - You can map the name of a column in Gherkin to a 
+**Column Name Transformations** - You can map the name of a column in Gherkin to a 
 database column name. EG Desc > conf_description
 
-**Column Data Translations** - You can translate the data in the column by 
+**Column Data Transformations** - You can translate the data in the column by 
 registering functions. EG 08/10/2011 09:00 > 2011-10-08 09:00:00
 
 **Default Values** - You can assign default values to columns so you do not have
@@ -83,7 +83,7 @@ Scenario:
 
 ```
 
-*Note:* The example contains name and data translations.
+*Note:* The example contains name and data transformations.
 
 The step:
 
@@ -358,10 +358,10 @@ configuration provided.
 sections.
 
 
-Column Name Translations
-------------------------
+Column Name Transformations
+---------------------------
 
-The goal of column name translations is to change often ugly looking database 
+The goal of column name transformations is to change often ugly looking database 
 column names to human readable and business friends names.
 
 In this example we want to change column names like 'ev_name' and 
@@ -377,13 +377,13 @@ First create an entity:
 
 ```
 
-The set some column name translations:
+The set some column name transformations:
 
 ``` php 
 
 <?php
 
-$event->setNameTranslations(array(
+$event->setNameTransformations(array(
                             'Name' => 'ev_name',
                             'Description' => 'ev_description',
                             'Start Date' => 'ev_date',
@@ -392,11 +392,11 @@ $event->setNameTranslations(array(
 
 ```
 
-** Important: Column Name translations get applied first. When referencing 
+** Important: Column Name transformations get applied first. When referencing 
 columns in subsequent methods / configs use the database column name ** 
 
-Column Data Translations
-------------------------
+Column Data Transformations
+---------------------------
 
 In the same way it is preferable to represent column names as human readable and
 business friendly as possible we should also represent the data in the column in
@@ -419,7 +419,7 @@ The closure accepts the data from a column and returns its translated form.
 ``` php 
 <?php 
 
-$this->phabricBus->addDataTranslation(
+$this->phabricBus->addDataTransformation(
             'UKTOMYSQLDATE', function($date) {
                 $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                 return $date->format('Y-m-d H:i:s');
@@ -428,24 +428,24 @@ $this->phabricBus->addDataTranslation(
 
 ```
 
-Then set the translation(s) with the entity.
+Then set the transformation(s) with the entity.
 
 ``` php 
 
 <?php 
 
-    $event->setDataTranslations(array(
+    $event->setDataTransformations(array(
                                 'ev_date' => 'UKTOMYSQLDATE'
                                 ));
 
 ```
 
 *Note* The use of the real database column name when registering data 
-translation closures.
+transformations closures.
 
-** Important: Registration of closures with the bus and registering translations
-can be carried out in any order. However, remember that bus registration must 
-occur before data translation actually occurs. **
+** Important: Registration of closures with the bus and registering 
+transformations can be carried out in any order. However, remember that bus 
+registration must occur before data transformation actually occurs. **
 
 Column Default Values
 ---------------------
@@ -469,20 +469,20 @@ Defaults are set using an array of database column names and values:
 
 ```
 
-To override the default ensure a name translation is set up (optionally 
-with a data translation) and include the column in the Gherkin table.
+To override the default ensure a name transformations is set up (optionally 
+with a data transformation) and include the column in the Gherkin table.
 
 ``` php 
 <?php
 
-    $event->setNameTranslations(array(
+    $event->setNameTransformations(array(
                                 'Name' => 'ev_name',
                                 'Description' => 'ev_description',
                                 'Start Date' => 'ev_date',
                                 'Displayed' => 'ev_disp'
                                 ));
     
-    $this->phabricBus->addDataTranslation(
+    $this->phabricBus->addDataTransformation(
                 'YESNOFLAG', function($ynFlag) {
                     switch($ynFlag) {
                     case 'YES':
@@ -499,7 +499,7 @@ with a data translation) and include the column in the Gherkin table.
                 }
         );
     
-    $event->setDataTranslations(array(
+    $event->setDataTransformations(array(
                                 'ev_date' => UKTOMYSQLDATE
                                 'ev__disp' => 'YESNOFLAG'
                                 ));
@@ -567,7 +567,7 @@ last inserted ID returned from the database to the value of the left most column
 
 It's possible to access this id by using the 'getNamedItemId()' method on the 
 Phabric entity. Id's can be substituted for entity names by registering a 
-standard data translation.  
+standard data transformation.  
 
 *Note:* When using relational data you should ensure the left most column is 
 consistently the same. In this instance 'Name' is the left most column and ID's 
@@ -584,7 +584,7 @@ The vote database table looks like this:
 </pre>
 
 *Note: * The following example just shows relational data functionality. Other 
-translations are required on names and data for the example to work.
+transformations are required on names and data for the example to work.
  
 From a Behat feature file: 
 
@@ -611,14 +611,14 @@ Scenario:
 
 ```
 
-When setting up the Phabric object data translations are registered for translating
+When setting up the Phabric object data transformations are registered for translating
 Attendee names and session names with there ID's:
 
 ``` php 
 
 <?php 
 
-$this->phabricBus->addDataTranslation(
+$this->phabricBus->addDataTransformation(
         'ATTENDEELOOKUP', function($attendeeName, $bus) {
             $ent = $bus->getEntity('attendee');
 
@@ -627,7 +627,7 @@ $this->phabricBus->addDataTranslation(
             return $id;
         });
 
-$this->phabricBus->addDataTranslation(
+$this->phabricBus->addDataTransformation(
         'SESSIONLOOKUP', function($sessionName, $bus) {
             $ent = $bus->getEntity('session');
 
@@ -638,16 +638,16 @@ $this->phabricBus->addDataTranslation(
 
 ```
 
-And the name and data translations are registered with the vote entity:
+And the name and data transformation are registered with the vote entity:
 
 ``` php 
 <?php 
 
-$vote->setNameTranslations(array(
+$vote->setNameTransformations(array(
                             'Session' => 'session_id',
                             'Attendee' => 'attendee_id'));
 
-$vote->setDataTranslations(array(
+$vote->setDataTransformations(array(
                             'session_id' => 'SESSIONLOOKUP',
                             'attendee_id' => 'ATTENDEELOOKUP'));
 
@@ -700,15 +700,15 @@ default:
           event:
             tableName: 'event'
             entityName: 'Event'
-            nameTranslations:
+            nameTransformations:
               Date: datetime
               Desc: description
-            dataTranslations:
+            dataTransformations:
               datetime: UKTOMYSQLDATE
           session:
             tableName: 'session'
             entityName: 'Session'
-            nameTranslations:
+            nameTransformations:
               Session Code: session_code
           attendee:
             tableName: 'attendee'
@@ -716,10 +716,10 @@ default:
           vote:
             tableName: 'vote'
             entityName: 'Vote'
-            nameTranslations:
+            nameTransformations:
               Attendee: attendee_id
               Session: session_id
-            dataTranslations:
+            dataTransformations:
               attendee_id: ATTENDEELOOKUP
               session_id: SESSIONLOOKUP
               vote: UPDOWNTOINT
@@ -730,7 +730,7 @@ By putting Phabric config under the FeatureContext>Parameters section it is
 available in the $parameters array of the Behat FeatureContext constructor.
 This is where all the configuration of the Phabric bus and entities occurs.
 
-As you can see name and data translations, the database table an entity maps to 
+As you can see name and data transformations, the database table an entity maps to 
 and default values can be included in config.
 
 In the constructor of the FeatureContext class:

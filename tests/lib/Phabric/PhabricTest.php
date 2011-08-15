@@ -58,34 +58,32 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         $this->assertType('\Phabric\Entity', $entity);
     }
 
-    /**
-     * @todo Implement testRegisterNamedDataTranslation().
-     */
-    public function testAddDataTranslation()
+
+    public function testAddDataTransformation()
     {
         $fn = function($a, $b) { $c = $a + $b; return $c; };
 
-        $this->object->addDataTranslation('test', $fn);
+        $this->object->addDataTransformation('test', $fn);
 
-        $this->assertEquals($fn, $this->object->getDataTranslation('test'));
+        $this->assertEquals($fn, $this->object->getDataTransformation('test'));
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testAddDataTranslationNonCallableArgument()
+    public function testAddDataTransformationNonCallableArgument()
     {
         $fn = array();
 
-        $this->object->addDataTranslation('test', $fn);
+        $this->object->addDataTransformation('test', $fn);
     }
 
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testGetDataTranslationNotFound()
+    public function testGetDataTransformationNotFound()
     {
-        $this->object->getDataTranslation('test');
+        $this->object->getDataTransformation('test');
     }
 
     /**

@@ -30,14 +30,14 @@ class Entity
      *
      * @var array
      */
-    protected $nameTranslations = array();
+    protected $nameTransformations = array();
 
     /**
-     * Data Translations - An array of database col names and transformation types.
+     * Data Transformations - An array of database col names and transformation types.
      *
      * @var array
      */
-    protected $dataTranslations = array();
+    protected $dataTransformations = array();
 
     /**
      * Default values to augment Gherkin table data with.
@@ -94,14 +94,14 @@ class Entity
                 $this->setTableName($config['tableName']);
             }
 
-            if(isset($config['nameTranslations']))
+            if(isset($config['nameTransformations']))
             {
-                $this->setNameTranslations($config['nameTranslations']);
+                $this->setNameTransformations($config['nameTransformations']);
             }
 
-            if(isset($config['dataTranslations']))
+            if(isset($config['dataTransformations']))
             {
-                $this->setDataTranslations($config['dataTranslations']);
+                $this->setDataTransformations($config['dataTransformations']);
             }
 
             if(isset($config['defaults']))
@@ -162,29 +162,29 @@ class Entity
     }
 
     /**
-     * Sets the translations used to map human readable gherkin table headers
+     * Sets the transformations used to map human readable gherkin table headers
      * to the columns in the database.
      *
      * @return void
      */
-    public function setNameTranslations($translations)
+    public function setNameTransformations($transformations)
     {
-        $this->nameTranslations = $translations;
+        $this->nameTransformations = $transformations;
     }
         
 
     /**
-     * Sets the translations used to transform values in the gherkin text.
+     * Sets the transformations used to transform values in the gherkin text.
      * EG - A date transformation d/m/y > Y-m-d H:i:s
      * Note: These must map to functions registered with the Phabric\Bus
      *
      * @return void
      */
-    public function setDataTranslations($translations)
+    public function setDataTransformations($transformations)
     {
-        foreach($translations as $colName => $translationName)
+        foreach($transformations as $colName => $transformationName)
         {
-            $this->dataTranslations[$colName] = $translationName;
+            $this->dataTransformations[$colName] = $transformationName;
         }
     }
 
@@ -218,9 +218,9 @@ class Entity
 
             foreach($row as $colName => &$colValue)
             {
-                if(isset($this->dataTranslations[$colName]))
+                if(isset($this->dataTransformations[$colName]))
                 {
-                    $fn = $this->bus->getDataTranslation($this->dataTranslations[$colName]);
+                    $fn = $this->bus->getDataTransformation($this->dataTransformations[$colName]);
                     $colValue = $fn($colValue, $this->bus);
                 }
             }
@@ -248,9 +248,9 @@ class Entity
         
         foreach($header as &$colName)
         {
-            if(isset($this->nameTranslations[$colName]))
+            if(isset($this->nameTransformations[$colName]))
             {
-                $colName = $this->nameTranslations[$colName];
+                $colName = $this->nameTransformations[$colName];
             }
         }
 

@@ -91,7 +91,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                 ->once();
 
         $this->object->setTableName('Event');
-        $this->object->setNameTranslations(array('Date' => 'datetime',
+        $this->object->setNameTransformations(array('Date' => 'datetime',
             'Desc' => 'description'));
 
         $this->object->createFromTable($tableNode);
@@ -127,7 +127,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
         $this->object->createFromTable($tableNode);
     }
 
-    public function testCreateWithDataTranslations() {
+    public function testCreateWithDataTransformations() {
        
         $tableData = array(
             array('name', 'datetime', 'venue', 'description'),
@@ -156,13 +156,13 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                     return $date->format('Y-m-d H:i:s');
                 };
 
-        $this->mockedBus->shouldReceive('getDataTranslation')
+        $this->mockedBus->shouldReceive('getDataTransformation')
                 ->with('UKTOMYSQLDATE')
                 ->once()
                 ->andReturn($retFn);
 
 
-        $this->object->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
+        $this->object->setDataTransformations(array('datetime' => 'UKTOMYSQLDATE'));
 
         $this->object->createFromTable($tableNode);
     }
@@ -189,7 +189,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                 ->once();
 
         $this->object->setTableName('Event');
-        $this->object->setNameTranslations(array('Date' => 'datetime'));
+        $this->object->setNameTransformations(array('Date' => 'datetime'));
 
         $this->object->setDefaults(array(
             'description' => 'TEST DESCRIPTION',
@@ -201,12 +201,12 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                     return $date->format('Y-m-d H:i:s');
                 };
 
-        $this->mockedBus->shouldReceive('getDataTranslation')
+        $this->mockedBus->shouldReceive('getDataTransformation')
                 ->with('UKTOMYSQLDATE')
                 ->once()
                 ->andReturn($retFn);
 
-        $this->object->setDataTranslations(array('datetime' => 'UKTOMYSQLDATE'));
+        $this->object->setDataTransformations(array('datetime' => 'UKTOMYSQLDATE'));
 
         $this->object->createFromTable($tableNode);
     }
