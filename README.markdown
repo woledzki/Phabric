@@ -96,8 +96,7 @@ The step:
  */
 public function theFollowingEventsExist(TableNode $table) {
 
-    $eventPh = $this->phabricBus->getEntity('event');
-    $eventPh->createFromTable($table);
+    $this->phabricBus->createFromTable('event', $table);
 }
 
 ```
@@ -548,12 +547,11 @@ And in the corresponding Behat step:
      * @Given /^The following events exist$/
      */
     public function theFollowingEventsExist(TableNode $table) {
-        
-        // Get the event entity from the Phabric bus.
-        $eventPh = $this->phabricBus->getEntity('event');
-        
-        // Pass in the raw table data to the create method to create a DB record
-        $eventPh->createFromTable($table);
+    
+        // With an entity previously configured just pass it's name and
+        // the table node tot the 'createFromTable' method on the Phabric 
+        //object.
+        $this->phabricBus->createFromTable('event', $table);
     }
 
 ```
@@ -613,7 +611,7 @@ Scenario:
 
 ```
 
-When setting up the Phabric bus data translations are registered for translating
+When setting up the Phabric object data translations are registered for translating
 Attendee names and session names with there ID's:
 
 ``` php 

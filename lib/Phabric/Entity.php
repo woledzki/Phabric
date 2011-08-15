@@ -1,6 +1,5 @@
 <?php
 namespace Phabric;
-use Phabric\Bus;
 use Doctrine\DBAL\Connection;
 use Behat\Gherkin\Node\TableNode;
 /**
@@ -120,7 +119,7 @@ class Entity
      * @return void.
      * 
      */
-    public function setBus(Bus $bus)
+    public function setBus(Phabric $bus)
     {
         $this->bus = $bus;
     }

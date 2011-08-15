@@ -1,7 +1,8 @@
 <?php
 namespace Phabric;
+use Behat\Gherkin\Node\TableNode;
 /**
- * The Phabric bus manages the registration of translations for use on all
+ * The Phabric object manages the registration of translations for use on all
  * subscribing instances of Phabric. It also allows the creation of relational
  * data by providing one instance of Phabric with access to all others via a single interface.
  *
@@ -32,7 +33,7 @@ class Phabric
     protected $datasource;
 
     /**
-     * Initialises an instance of the Phabric Bus class.
+     * Initialises an instance of the Phabric class.
      *
      * @param $ds The Datasource
      * 
@@ -44,7 +45,7 @@ class Phabric
     }
     
     /**
-     * Creates and registers a Phabric entity with the bus.
+     * Creates and registers a Phabric entity.
      * 
      * @param string $name   Name to register the entity with.
      * @param array  $config Configuration array.
@@ -105,13 +106,13 @@ class Phabric
      *
      * @return void
      */
-    protected function addEntity($name, Entity $phabric)
+    public function addEntity($name, Entity $phabric)
     {
         $this->registeredPhabricEntities[$name] = $phabric;
     }
 
     /**
-     * Get a named Phabric entity from the bus.
+     * Get a named Phabric entity from the registered entities.
      *
      * @param string $name 
      *
@@ -127,7 +128,31 @@ class Phabric
         }
         else
         {
-            throw new \InvalidArgumentException('Entity not registered with the bus');
+            throw new \InvalidArgumentException('Entity not registered');
+        }
+    }
+    
+    /**
+     * A convience method taking the name of a previously created entity and 
+     * a TableNode. Data is inserted into the data source as if calling 
+     * 'createFromTable' on the named entity directly.
+     * 
+     * @param string    $entityName Name of a previously created entity.
+     * @param TableNode $table 
+     * @param boolean   $default    Determines if default data values should be applied.
+     * 
+     */
+    public function createFromTable($entityName, TableNode $table, $default = null)
+    {
+        $entity = $this->getEntity($entityName);
+        
+        if($entity instanceof Entity)
+        {
+            return $entity->createFromTable($table, $default);
+        }
+        else
+        {
+            throw new \RuntimeException('Specified entity name does not map to registered entity');
         }
     }
 
