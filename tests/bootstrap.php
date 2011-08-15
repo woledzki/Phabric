@@ -20,3 +20,6 @@ $docLoader->register();
 
 $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
 $docComLoader->register();
+
+$behatLoader = new \Doctrine\Common\ClassLoader('Behat', '/Users/bwaine/pear/share/pear/gherkin/src');
+$behatLoader->register();

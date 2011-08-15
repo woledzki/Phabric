@@ -127,10 +127,8 @@ class FeatureContext extends BehatContext {
      * @Given /^The following events exist$/
      */
     public function theFollowingEventsExist(TableNode $table) {
-        $tableData = $table->getRows();
-
         $eventPh = $this->phabricBus->getEntity('event');
-        $eventPh->create($tableData);
+        $eventPh->createFromTable($table);
     }
 
     /**
@@ -173,10 +171,8 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingSessionsExist(TableNode $table)
     {
-        $tableData = $table->getRows();
-
         $sesPh = $this->phabricBus->getEntity('session');
-        $sesPh->create($tableData);
+        $sesPh->createFromTable($table);
     }
 
     /**
@@ -184,10 +180,8 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingAttendeesExist(TableNode $table)
     {
-        $tableData = $table->getRows();
-
         $attePh = $this->phabricBus->getEntity('attendee');
-        $attePh->create($tableData);
+        $attePh->createFromTable($table);
     }
 
     /**
@@ -195,10 +189,8 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingVotesExist(TableNode $table)
     {
-        $tableData = $table->getRows();
-
         $attePh = $this->phabricBus->getEntity('vote');
-        $attePh->create($tableData);
+        $attePh->createFromTable($table);
     }
     
     /**

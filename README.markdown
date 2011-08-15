@@ -95,10 +95,9 @@ The step:
  * @Given /^The following events exist$/
  */
 public function theFollowingEventsExist(TableNode $table) {
-    $tableData = $table->getRows();
 
     $eventPh = $this->phabricBus->getEntity('event');
-    $eventPh->create($tableData);
+    $eventPh->createFromTable($table);
 }
 
 ```
@@ -348,7 +347,7 @@ With the Phabric object set up you can now obtain Phabric entity instances like 
 ``` php 
 <?php 
 
-    $event = $this->phabricBus->createPhabric('event', $config);
+    $event = $this->phabricBus->createEntity('event', $config);
 
 ```
 
@@ -375,7 +374,7 @@ First create an entity:
 
 <?php 
 
-   $event = $this->phabricBus->createPhabric('event', $config);
+   $event = $this->phabricBus->createEntity('event', $config);
 
 ```
 
@@ -550,15 +549,11 @@ And in the corresponding Behat step:
      */
     public function theFollowingEventsExist(TableNode $table) {
         
-        // Get the Raw gherkin data in array form.
-        $tableData = $table->getRows();
-        
-
         // Get the event entity from the Phabric bus.
         $eventPh = $this->phabricBus->getEntity('event');
         
         // Pass in the raw table data to the create method to create a DB record
-        $eventPh->create($tableData);
+        $eventPh->createFromTable($table);
     }
 
 ```
@@ -669,10 +664,8 @@ The create() method is used as in the previous example:
      */
     public function theFollowingVotesExist(TableNode $table)
     {
-        $tableData = $table->getRows();
-
         $attePh = $this->phabricBus->getEntity('vote');
-        $attePh->create($tableData);
+        $attePh->createFromTable($table);
     }
 
 ```

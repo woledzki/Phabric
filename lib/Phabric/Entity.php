@@ -2,6 +2,7 @@
 namespace Phabric;
 use Phabric\Bus;
 use Doctrine\DBAL\Connection;
+use Behat\Gherkin\Node\TableNode;
 /**
  * Phabric base class. Encapsulates the basic single table create and
  * update behaviour used to translate Gherkin tables into database entries.
@@ -197,8 +198,10 @@ class Entity
      *
      * @return void
      */
-    public function create($data, $defaultFlag = true)
+    public function createFromTable(TableNode $table, $defaultFlag = true)
     {
+        
+        $data = $table->getRows();
 
         $header = array_shift($data);
 
