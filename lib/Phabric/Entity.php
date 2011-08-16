@@ -2,6 +2,15 @@
 namespace Phabric;
 use Doctrine\DBAL\Connection;
 use Behat\Gherkin\Node\TableNode;
+
+/**
+ * This file is part of the Phabric.
+ * (c) Ben Waine <ben@ben-waine.co.uk>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
  * Phabric base class. Encapsulates the basic single table create and
  * update behaviour used to translate Gherkin tables into database entries.

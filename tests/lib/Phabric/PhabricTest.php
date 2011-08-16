@@ -3,6 +3,13 @@
 namespace Phabric;
 use Mockery as m;
 
+/**
+ * This file is part of the Phabric.
+ * (c) Ben Waine <ben@ben-waine.co.uk>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 /**
  * Test class for Bus.
