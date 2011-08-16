@@ -11,6 +11,23 @@ Scenario: A basic update is performed
     | Name  | Date             | Venue                   | Desc             |
     | PHPNW | 08/10/2011 10:00 | Ramada Hotel MANCHESTER | An awesome conf! |
     | PHPUK | 27/02/2012 10:00 | London Business Center  | Quite good conf. |
+    When I select all records from the event table
+    Then I should see the following records
+    | name  | datetime            | venue                   | description      |
+    | PHPNW | 2011-10-08 10:00:00 | Ramada Hotel MANCHESTER | An awesome conf! |
+    | PHPUK | 2012-02-27 10:00:00 | London Business Center  | Quite good conf. |
+
+
+Scenario: A partial update is performed
+    Given The following events exist
+    | Name  | Date             | Venue                  | Desc             |
+    | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
+    | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
+    When The following events are updated
+    | Name  | Date             | Venue                   |
+    | PHPNW | 08/10/2011 10:00 | Ramada Hotel MANCHESTER | 
+    | PHPUK | 27/02/2012 10:00 | London Business Center  |
+    When I select all records from the event table
     Then I should see the following records
     | name  | datetime            | venue                   | description      |
     | PHPNW | 2011-10-08 10:00:00 | Ramada Hotel MANCHESTER | An awesome conf! |

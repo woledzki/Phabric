@@ -17,6 +17,7 @@ default:
         entities:
           event:
             tableName: 'event'
+            primaryKey: 'id'
             entityName: 'Event'
             nameTransformations:
               Date: datetime
@@ -25,14 +26,17 @@ default:
               datetime: UKTOMYSQLDATE
           session:
             tableName: 'session'
+            primaryKey: 'id'
             entityName: 'Session'
             nameTransformations:
               Session Code: session_code
           attendee:
             tableName: 'attendee'
+            primaryKey: 'id'            
             entityName: 'Attendee'
           vote:
             tableName: 'vote'
+            primaryKey: 'id'            
             entityName: 'Vote'
             nameTransformations:
               Attendee: attendee_id

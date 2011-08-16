@@ -50,18 +50,19 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
     public function testInsertFromTable() {
         $tableData = array(
-            array('name', 'datetime', 'venue', 'description'),
-            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
+            array(
+                'name' => 'PHPNW',
+                'datetime' => '2011-10-08 09:00:00',
+                'venue' => 'Ramada Hotel',
+                'description' => 'A Great Conf!')
         );
 
 
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
-
-        //var_dump($tableNode);die;
 
         $expectedInsert = array('name' => 'PHPNW',
             'datetime' => '2011-10-08 09:00:00',
@@ -78,13 +79,18 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInsertFromTableWithNameTransformations() {
+
+
         $tableData = array(
-            array('Name', 'Date', 'Venue', 'Desc'),
-            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
+            array(
+                'Name' => 'PHPNW',
+                'Date' => '2011-10-08 09:00:00',
+                'Venue' => 'Ramada Hotel',
+                'Desc' => 'A Great Conf!')
         );
 
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
@@ -106,13 +112,17 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInsertFromTableWithDefaults() {
+
         $tableData = array(
-            array('name', 'datetime', 'venue'),
-            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel')
+            array(
+                'name' => 'PHPNW',
+                'datetime' => '2011-10-08 09:00:00',
+                'venue' => 'Ramada Hotel',
+            )
         );
 
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
@@ -136,14 +146,18 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInsertFromTableWithDataTransformations() {
-       
+
         $tableData = array(
-            array('name', 'datetime', 'venue', 'description'),
-            array('PHPNW', '08/10/2011 09:00', 'Ramada Hotel', 'A Great Conf!')
+            array(
+                'name' => 'PHPNW',
+                'datetime' => '08/10/2011 09:00',
+                'venue' => 'Ramada Hotel',
+                'description' => 'A Great Conf!')
         );
 
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
@@ -181,8 +195,16 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             array('PHPNW', '08/10/2011 09:00', 'Ramada Hotel')
         );
 
+        $tableData = array(
+            array(
+                'Name' => 'PHPNW',
+                'Date' => '08/10/2011 09:00',
+                'Venue' => 'Ramada Hotel'
+            )
+        );
+
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
@@ -220,13 +242,18 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetNamedItemId() {
+
         $tableData = array(
-            array('name', 'datetime', 'venue', 'description'),
-            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
+            array(
+                'name' => 'PHPNW',
+                'datetime' => '2011-10-08 09:00:00',
+                'venue' => 'Ramada Hotel',
+                'description' => 'A Great Conf!')
         );
 
         $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getRows')
+
+        $tableNode->shouldReceive('getHash')
                 ->withNoArgs()
                 ->andReturn($tableData)
                 ->once();
@@ -246,6 +273,100 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertInternalType('integer', $this->object->getNamedItemId('PHPNW'));
         $this->assertEquals(12, $this->object->getNamedItemId('PHPNW'));
+    }
+
+    public function testUpdateFromTable() {
+        $inTableData = array(
+            array(
+                'name' => 'PHPNW',
+                'datetime' => '2011-10-08 09:00:00',
+                'venue' => 'Ramada Hotel',
+                'description' => 'A Great Conf!')
+        );
+
+        $update = array(
+            'name' => 'PHPNW',
+            'datetime' => '2011-10-08 10:00:00',
+            'venue' => 'Ramada Hotel MAN',
+            'description' => 'A Great Conf!');
+
+        $upTableData = array(
+            $update
+        );
+
+        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
+        $tableNode->shouldReceive('getHash')
+                ->withNoArgs()
+                ->andReturn($inTableData, $upTableData)
+                ->twice();
+
+
+        $this->mockedConnection->shouldReceive('insert')
+                ->withAnyArgs()
+                ->once();
+
+        $this->mockedConnection->shouldReceive('update')
+                ->with("event", $update, array("id" => 12))
+                ->once();
+
+
+        $this->object->setTableName('event');
+        $this->object->setPkCol('id');
+
+        $this->object->insertFromTable($tableNode);
+        $this->object->updateFromTable($tableNode);
+    }
+        
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testUpdateWithNoPkColSet()
+    {
+        $this->object->setTableName('event');
+        
+        $update = array(
+            'name' => 'PHPNW',
+            'datetime' => '2011-10-08 10:00:00',
+            'venue' => 'Ramada Hotel MAN',
+            'description' => 'A Great Conf!');
+
+        $upTableData = array(
+            $update
+        );
+
+        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
+        $tableNode->shouldReceive('getHash')
+                  ->never();
+
+        
+        $this->object->updateFromTable($tableNode);    
+    }
+    
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testUpdateFromTableThrowsExceptionWhenNoPrevInsert() {
+        
+        $this->object->setTableName('event');
+        $this->object->setPkCol('id');
+        
+        $update = array(
+            'name' => 'PHPNW',
+            'datetime' => '2011-10-08 10:00:00',
+            'venue' => 'Ramada Hotel MAN',
+            'description' => 'A Great Conf!');
+
+        $upTableData = array(
+            $update
+        );
+
+        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
+        $tableNode->shouldReceive('getHash')
+                ->withNoArgs()
+                ->andReturn($upTableData)
+                ->once();
+        
+        $this->object->updateFromTable($tableNode);
     }
 
 }

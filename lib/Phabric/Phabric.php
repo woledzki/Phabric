@@ -180,6 +180,24 @@ class Phabric
             throw new \RuntimeException('Specified entity name does not map to registered entity');
         }
     }
+    
+    /**
+     * A convience method taking the name of a previously created entity and a 
+     * TableNode. Data is used to update previously inserted database records.
+     * 
+     * @param Entity    $entityName
+     * @param TableNode $table 
+     * 
+     * @throws \RuntimeException When a record previously not inserted is specified
+     * 
+     * @return void
+     */
+    public function updateFromTable($entityName, TableNode $table)
+    {
+        $entity = $this->getEntity($entityName);
+        
+        $entity->updateFromTable($table);
+    }
 
 
 }

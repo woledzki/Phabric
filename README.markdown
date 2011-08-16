@@ -663,11 +663,72 @@ The create() method is used as in the previous example:
      */
     public function theFollowingVotesExist(TableNode $table)
     {
-        $attePh = $this->phabric->getEntity('vote');
-        $attePh->insertFromTable($table);
+        $this->phabric->insertFromTable('vote', $table);
     }
 
 ```
+
+Updating Data
+=============
+
+Updating data is very similar to inserting data:
+
+``` php 
+<?php 
+
+    /**
+     * @Given /^the following votes exist$/
+     */
+    public function theFollowingVotesExist(TableNode $table)
+    {
+        $this->phabric->updateFromTable('vote', $table);
+    }
+
+```
+
+There are some gotcha's to watch out for when updating data.
+
+* The left hand column is the column Phabric uses to identify records. It should
+remain the same throughout your scenario. In this case an event is referenced 
+internally by it's name (PHPNW or PHPUK).
+
+* If data hasn't previously been inserted then it can't be updated. Atempting 
+this causes an exception to be thrown.
+
+* Partial updates are supported but remember the referencing column must be 
+present.
+
+A full table:
+
+``` gherkin
+
+    | Name  | Date             | Venue                   | Desc             |
+    | PHPNW | 08/10/2011 10:00 | Ramada Hotel MANCHESTER | An awesome conf! |
+    | PHPUK | 27/02/2012 10:00 | London Business Center  | Quite good conf. |
+
+```
+
+A correct partial table: 
+
+``` gherkin
+
+    | Name  | Date             | Venue                   |
+    | PHPNW | 08/10/2011 10:00 | Ramada Hotel MANCHESTER |
+    | PHPUK | 27/02/2012 10:00 | London Business Center  |
+
+```
+
+An incorrect partial table:
+
+``` gherkin
+
+    |Date              | Venue                   | Desc             |
+    | 08/10/2011 10:00 | Ramada Hotel MANCHESTER | An awesome conf! |
+    | 27/02/2012 10:00 | London Business Center  | Quite good conf. |
+
+```
+    
+
 
 Configuration Approach
 ======================

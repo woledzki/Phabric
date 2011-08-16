@@ -95,11 +95,6 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInsertFromTable() {
-        $tableData = array(
-            array('name', 'datetime', 'venue', 'description'),
-            array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
-        );
-
 
         $tableNode = m::mock('\Behat\Gherkin\Node\TableNode');
 
@@ -115,8 +110,8 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testCreateEntitiesFromConfig() {
-        
-        
+
+
         $config = array(
             'event' => array(
                 'tableName' => 'event'
@@ -128,13 +123,43 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                 'tableName' => 'session'
             ),
         );
-        
+
         $this->object->createEntitiesFromConfig($config);
-        
+
         $this->assertType('Phabric\Entity', $this->object->getEntity('event'));
         $this->assertType('Phabric\Entity', $this->object->getEntity('vote'));
         $this->assertType('Phabric\Entity', $this->object->getEntity('session'));
-        
+    }
+
+    public function testUpdateFromTable() 
+    {
+        $tableNode = m::mock('\Behat\Gherkin\Node\TableNode');
+
+        $mockEntity = m::mock('\Phabric\Entity');
+
+        $mockEntity->shouldReceive('updateFromTable')
+                ->with($tableNode)
+                ->once();
+
+        $this->object->addEntity('TEST', $mockEntity);
+
+        $this->object->updateFromTable('TEST', $tableNode);
+    }
+    
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testUpdateFromTableThrowsExceptionWhenUnregEntity() 
+    {
+
+        $tableNode = m::mock('\Behat\Gherkin\Node\TableNode');
+
+        $mockEntity = m::mock('\Phabric\Entity');
+
+        $mockEntity->shouldReceive('updateFromTable')
+                   ->never();
+
+        $this->object->updateFromTable('TEST', $tableNode);
     }
 
 }

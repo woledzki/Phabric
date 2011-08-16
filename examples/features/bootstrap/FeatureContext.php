@@ -134,7 +134,7 @@ class FeatureContext extends BehatContext {
         $sql = 'SELECT * FROM event';
 
         $rows = self::$db->fetchAll($sql);
-
+        
         $this->qResult = $rows;
     }
 
@@ -203,6 +203,14 @@ class FeatureContext extends BehatContext {
         $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
         
         assertequals($score, $result[0]);
+    }
+    
+    /**
+     * @When /^The following events are updated$/
+     */
+    public function theFollowingEventsAreUpdated(TableNode $table)
+    {
+        $this->phabric->updateFromTable('event', $table);
     }
 
 }
