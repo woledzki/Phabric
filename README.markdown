@@ -233,7 +233,7 @@ public function __construct(array $parameters) {
 
 
 
-    $this->phabricBus = new Bus(self::$db);
+    $this->phabricBus = new Phabric\Phabric(self::$db);
 
 }
 
