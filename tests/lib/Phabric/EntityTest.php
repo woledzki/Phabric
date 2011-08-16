@@ -40,7 +40,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
         m::close();
     }
 
-    public function testCreate() {
+    public function testInsertFromTable() {
         $tableData = array(
             array('name', 'datetime', 'venue', 'description'),
             array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
@@ -66,10 +66,10 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->object->setTableName('Event');
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
     }
 
-    public function testCreateWithNameTransformations() {
+    public function testInsertFromTableWithNameTransformations() {
         $tableData = array(
             array('Name', 'Date', 'Venue', 'Desc'),
             array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel', 'A Great Conf!')
@@ -94,10 +94,10 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
         $this->object->setNameTransformations(array('Date' => 'datetime',
             'Desc' => 'description'));
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
     }
 
-    public function testCreateWithDefaults() {
+    public function testInsertFromTableWithDefaults() {
         $tableData = array(
             array('name', 'datetime', 'venue'),
             array('PHPNW', '2011-10-08 09:00:00', 'Ramada Hotel')
@@ -124,10 +124,10 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'venue' => 'TEST VENUE'
         ));
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
     }
 
-    public function testCreateWithDataTransformations() {
+    public function testInsertFromTableWithDataTransformations() {
        
         $tableData = array(
             array('name', 'datetime', 'venue', 'description'),
@@ -164,10 +164,10 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->object->setDataTransformations(array('datetime' => 'UKTOMYSQLDATE'));
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
     }
 
-    public function testCreateWithMultipleFeaturesEnabled() {
+    public function testInsertFromTableWithMultipleFeaturesEnabled() {
         $tableData = array(
             array('Name', 'Date', 'Venue'),
             array('PHPNW', '08/10/2011 09:00', 'Ramada Hotel')
@@ -208,7 +208,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->object->setDataTransformations(array('datetime' => 'UKTOMYSQLDATE'));
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
     }
 
     public function testGetNamedItemId() {
@@ -234,7 +234,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->object->setTableName('Event');
 
-        $this->object->createFromTable($tableNode);
+        $this->object->insertFromTable($tableNode);
 
         $this->assertInternalType('integer', $this->object->getNamedItemId('PHPNW'));
         $this->assertEquals(12, $this->object->getNamedItemId('PHPNW'));

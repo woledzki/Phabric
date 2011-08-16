@@ -94,7 +94,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         $this->object->getEntity('anything');
     }
     
-    public function testCreateFromTable() 
+    public function testInsertFromTable() 
     {
         $tableData = array(
             array('name', 'datetime', 'venue', 'description'),
@@ -106,13 +106,13 @@ class PhabricTest extends \PHPUnit_Framework_TestCase
         
         $mockEntity = m::mock('\Phabric\Entity');
         
-        $mockEntity->shouldReceive('createFromTable')
+        $mockEntity->shouldReceive('insertFromTable')
                    ->with($tableNode, null)
                    ->once();
         
         $this->object->addEntity('TEST', $mockEntity);
         
-        $this->object->createFromTable('TEST', $tableNode);
+        $this->object->insertFromTable('TEST', $tableNode);
        
     }
     

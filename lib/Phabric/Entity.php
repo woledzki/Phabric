@@ -197,7 +197,7 @@ class Entity
      *
      * @return void
      */
-    public function createFromTable(TableNode $table, $defaultFlag = true)
+    public function insertFromTable(TableNode $table, $defaultFlag = true)
     {
         
         $data = $table->getRows();

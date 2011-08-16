@@ -34,7 +34,7 @@ class FeatureContext extends BehatContext {
      *
      * @var Phabric\Bus
      */
-    private $phabricBus;
+    private $phabric;
 
     /**
      * The Databse Connection.
@@ -61,21 +61,21 @@ class FeatureContext extends BehatContext {
                     'driver' => $parameters['database']['driver'],
                 ));
 
-        $this->phabricBus = new Phabric(self::$db);
+        $this->phabric = new Phabric(self::$db);
 
-        $event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
-        $attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
-        $session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
-        $vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
+        $event    = $this->phabric->createEntity('event', $parameters['Phabric']['entities']['event']);
+        $attendee = $this->phabric->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
+        $session  = $this->phabric->createEntity('session', $parameters['Phabric']['entities']['session']);
+        $vote     = $this->phabric->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
-        $this->phabricBus->addDataTransformation(
+        $this->phabric->addDataTransformation(
                 'UKTOMYSQLDATE', function($date) {
                     $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                     return $date->format('Y-m-d H:i:s');
                 }
         );
 
-        $this->phabricBus->addDataTransformation(
+        $this->phabric->addDataTransformation(
                 'ATTENDEELOOKUP', function($attendeeName, $bus) {
                     $ent = $bus->getEntity('attendee');
 
@@ -84,7 +84,7 @@ class FeatureContext extends BehatContext {
                     return $id;
                 });
 
-        $this->phabricBus->addDataTransformation(
+        $this->phabric->addDataTransformation(
                 'SESSIONLOOKUP', function($sessionName, $bus) {
                     $ent = $bus->getEntity('session');
 
@@ -93,7 +93,7 @@ class FeatureContext extends BehatContext {
                     return $id;
                 });
 
-        $this->phabricBus->addDataTransformation(
+        $this->phabric->addDataTransformation(
                 'UPDOWNTOINT', function($action) {
                     $action = strtoupper($action);
                     switch ($action) {
@@ -127,7 +127,7 @@ class FeatureContext extends BehatContext {
      * @Given /^The following events exist$/
      */
     public function theFollowingEventsExist(TableNode $table) {
-        $this->phabricBus->createFromTable('event', $table);
+        $this->phabric->insertFromTable('event', $table);
     }
 
     /**
@@ -170,7 +170,7 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingSessionsExist(TableNode $table)
     {
-        $this->phabricBus->createFromTable('session', $table);
+        $this->phabric->insertFromTable('session', $table);
     }
 
     /**
@@ -178,7 +178,7 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingAttendeesExist(TableNode $table)
     {
-        $this->phabricBus->createFromTable('attendee', $table);
+        $this->phabric->insertFromTable('attendee', $table);
     }
 
     /**
@@ -186,7 +186,7 @@ class FeatureContext extends BehatContext {
      */
     public function theFollowingVotesExist(TableNode $table)
     {   
-        $this->phabricBus->createFromTable('vote', $table);
+        $this->phabric->insertFromTable('vote', $table);
     }
     
     /**
@@ -194,7 +194,7 @@ class FeatureContext extends BehatContext {
      */
     public function theSessionShouldHaveAScoreOf($session, $score)
     {
-        $sesPh = $this->phabricBus->getEntity('session');
+        $sesPh = $this->phabric->getEntity('session');
         $sessionId = $sesPh->getNamedItemId($session);
         
         $sql = 'SELECT sum(vote) as votes FROM vote WHERE session_id = :id';

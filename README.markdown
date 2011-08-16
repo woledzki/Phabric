@@ -96,7 +96,7 @@ The step:
  */
 public function theFollowingEventsExist(TableNode $table) {
 
-    $this->phabricBus->createFromTable('event', $table);
+    $this->phabric->insertFromTable('event', $table);
 }
 
 ```
@@ -217,7 +217,7 @@ Phabric:
 ``` php
 <?php 
 
-protected $phabricBus;
+protected $phabric;
 
 public function __construct(array $parameters) {
 
@@ -233,7 +233,7 @@ public function __construct(array $parameters) {
 
 
 
-    $this->phabricBus = new Phabric\Phabric(self::$db);
+    $this->phabric = new Phabric\Phabric(self::$db);
 
 }
 
@@ -271,7 +271,7 @@ Programmatically:
 <?php     
 
 // Note: no second config parameter passed
-$event = $this->phabricBus->createEntity('event');
+$event = $this->phabric->createEntity('event');
 
 $event->setTableName('event');
 
@@ -285,7 +285,7 @@ And Using configuration:
     
 // Note: The config array is pulled from the $parameters argument passed
 // into the FeatureContext constructor method.
-$this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
+$this->phabric->createEntity('event', $parameters['Phabric']['entities']['event']);
 
 ```
 
@@ -346,7 +346,7 @@ With the Phabric object set up you can now obtain Phabric entity instances like 
 ``` php 
 <?php 
 
-    $event = $this->phabricBus->createEntity('event', $config);
+    $event = $this->phabric->createEntity('event', $config);
 
 ```
 
@@ -373,7 +373,7 @@ First create an entity:
 
 <?php 
 
-   $event = $this->phabricBus->createEntity('event', $config);
+   $event = $this->phabric->createEntity('event', $config);
 
 ```
 
@@ -419,7 +419,7 @@ The closure accepts the data from a column and returns its translated form.
 ``` php 
 <?php 
 
-$this->phabricBus->addDataTransformation(
+$this->phabric->addDataTransformation(
             'UKTOMYSQLDATE', function($date) {
                 $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
                 return $date->format('Y-m-d H:i:s');
@@ -482,7 +482,7 @@ with a data transformation) and include the column in the Gherkin table.
                                 'Displayed' => 'ev_disp'
                                 ));
     
-    $this->phabricBus->addDataTransformation(
+    $this->phabric->addDataTransformation(
                 'YESNOFLAG', function($ynFlag) {
                     switch($ynFlag) {
                     case 'YES':
@@ -549,9 +549,9 @@ And in the corresponding Behat step:
     public function theFollowingEventsExist(TableNode $table) {
     
         // With an entity previously configured just pass it's name and
-        // the table node tot the 'createFromTable' method on the Phabric 
+        // the table node to the 'insertFromTable' method on the Phabric 
         //object.
-        $this->phabricBus->createFromTable('event', $table);
+        $this->phabric->insertFromTable('event', $table);
     }
 
 ```
@@ -618,7 +618,7 @@ Attendee names and session names with there ID's:
 
 <?php 
 
-$this->phabricBus->addDataTransformation(
+$this->phabric->addDataTransformation(
         'ATTENDEELOOKUP', function($attendeeName, $bus) {
             $ent = $bus->getEntity('attendee');
 
@@ -627,7 +627,7 @@ $this->phabricBus->addDataTransformation(
             return $id;
         });
 
-$this->phabricBus->addDataTransformation(
+$this->phabric->addDataTransformation(
         'SESSIONLOOKUP', function($sessionName, $bus) {
             $ent = $bus->getEntity('session');
 
@@ -662,8 +662,8 @@ The create() method is used as in the previous example:
      */
     public function theFollowingVotesExist(TableNode $table)
     {
-        $attePh = $this->phabricBus->getEntity('vote');
-        $attePh->createFromTable($table);
+        $attePh = $this->phabric->getEntity('vote');
+        $attePh->insertFromTable($table);
     }
 
 ```
@@ -738,10 +738,10 @@ In the constructor of the FeatureContext class:
 ``` php 
 <?php 
 
-$event    = $this->phabricBus->createEntity('event', $parameters['Phabric']['entities']['event']);
-$attendee = $this->phabricBus->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
-$session  = $this->phabricBus->createEntity('session', $parameters['Phabric']['entities']['session']);
-$vote     = $this->phabricBus->createEntity('vote', $parameters['Phabric']['entities']['vote']);
+$event    = $this->phabric->createEntity('event', $parameters['Phabric']['entities']['event']);
+$attendee = $this->phabric->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
+$session  = $this->phabric->createEntity('session', $parameters['Phabric']['entities']['session']);
+$vote     = $this->phabric->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
 ```
 
@@ -751,7 +751,7 @@ retrieved in step methods by using the bus:
 ```php 
 <?php 
 
-    $eventPh = $this->phabricBus->getEntity('event');
+    $eventPh = $this->phabric->getEntity('event');
 
 ```
 
