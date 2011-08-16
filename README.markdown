@@ -282,7 +282,7 @@ $event->setTableName('event');
 And Using configuration:
 
 ``` php
-    
+<?php     
 // Note: The config array is pulled from the $parameters argument passed
 // into the FeatureContext constructor method.
 $this->phabric->createEntity('event', $parameters['Phabric']['entities']['event']);
@@ -656,6 +656,7 @@ $vote->setDataTransformations(array(
 The create() method is used as in the previous example:
 
 ``` php 
+<?php 
 
     /**
      * @Given /^the following votes exist$/
@@ -744,6 +745,15 @@ $session  = $this->phabric->createEntity('session', $parameters['Phabric']['enti
 $vote     = $this->phabric->createEntity('vote', $parameters['Phabric']['entities']['vote']);
 
 ```
+
+Or use the more convenient 'createEntitiesFromConfig' method to register all 
+your entities at once:
+
+``` php
+
+    $this->phabric->createEntitiesFromConfig($parameters['Phabric']['entities']);
+
+``` 
 
 The factor methods return the Phabric entity instances but they can also be 
 retrieved in step methods by using the bus:

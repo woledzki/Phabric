@@ -69,6 +69,22 @@ class Phabric
         
         return $entity;
     }
+    
+    /**
+     * Creates multiple entities from config array.
+     * The keys of the array are used as the names of the entities.
+     * 
+     * @param array $config 
+     * 
+     * @return void
+     */
+    public function createEntitiesFromConfig(array $config)
+    {
+        foreach($config as $name => $enConf)
+        {
+            $this->createEntity($name, $enConf);
+        }
+    }
 
     /**
      * Registeres an lambda function against a named key for use in subscribed

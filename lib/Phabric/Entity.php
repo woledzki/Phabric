@@ -243,6 +243,19 @@ class Entity
         
 
     }
+    
+    /**
+     * Update a previously inserted entity with the new data from a gherkin table.
+     *
+     * @param string $name Human readable entity name
+     * @param array $data Gherkin table data. NB - Never augmented with default values.
+     *
+     * @return void
+     */
+    public function updateFromTable($name, $data)
+    {
+        
+    }
 
     /**
      * Applies an column name transformations.
@@ -280,19 +293,6 @@ class Entity
     {
         $defaultsReq = array_diff_key($this->defaults, $row);   
         $row = array_merge($row, $defaultsReq);
-    }
-
-    /**
-     * Update a previously inserted entity with the new data from a gherkin table.
-     *
-     * @param string $name Human readable entity name
-     * @param array $data Gherkin table data. NB - Never augmented with default values.
-     *
-     * @return void
-     */
-    public function update($name, $data)
-    {
-        
     }
         
     /**

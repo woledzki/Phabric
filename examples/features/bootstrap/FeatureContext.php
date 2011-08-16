@@ -63,10 +63,7 @@ class FeatureContext extends BehatContext {
 
         $this->phabric = new Phabric(self::$db);
 
-        $event    = $this->phabric->createEntity('event', $parameters['Phabric']['entities']['event']);
-        $attendee = $this->phabric->createEntity('attendee', $parameters['Phabric']['entities']['attendee']);
-        $session  = $this->phabric->createEntity('session', $parameters['Phabric']['entities']['session']);
-        $vote     = $this->phabric->createEntity('vote', $parameters['Phabric']['entities']['vote']);
+        $this->phabric->createEntitiesFromConfig($parameters['Phabric']['entities']);
 
         $this->phabric->addDataTransformation(
                 'UKTOMYSQLDATE', function($date) {
