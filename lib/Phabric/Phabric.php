@@ -1,6 +1,5 @@
 <?php
 namespace Phabric;
-use Behat\Gherkin\Node\TableNode;
 
 /**
  * This file is part of the Phabric.
@@ -33,10 +32,10 @@ class Phabric
      * @var array
      */
     protected $registeredPhabricEntities = array();
-    
+
     /**
      * Datasource used to insert / update records into.
-     * 
+     *
      * @var \Doctrine\Connection
      */
     protected $datasource;
@@ -45,37 +44,37 @@ class Phabric
      * Initialises an instance of the Phabric class.
      *
      * @param $ds The Datasource
-     * 
+     *
      * @return void
      */
     public function __construct($ds)
     {
         $this->datasource = $ds;
     }
-    
+
     /**
      * Creates and registers a Phabric entity.
-     * 
+     *
      * @param string $name   Name to register the entity with.
      * @param array  $config Configuration array.
-     * 
+     *
      * @return \Phabric\Entity
      */
     public function createEntity($name, $config = null)
     {
         $entity = new Entity($this->datasource, $this, $config);
-        
+
         $this->addEntity($name, $entity);
-        
+
         return $entity;
     }
-    
+
     /**
      * Creates multiple entities from config array.
      * The keys of the array are used as the names of the entities.
-     * 
-     * @param array $config 
-     * 
+     *
+     * @param array $config
+     *
      * @return void
      */
     public function createEntitiesFromConfig(array $config)
@@ -125,8 +124,8 @@ class Phabric
     /**
      * Registers an entity by name for retrieval later by other phabric
      * instances.
-     * 
-     * @param string Entity name 
+     *
+     * @param string Entity name
      * @param Entity $phabric
      *
      * @return void
@@ -139,7 +138,7 @@ class Phabric
     /**
      * Get a named Phabric entity from the registered entities.
      *
-     * @param string $name 
+     * @param string $name
      *
      * @throws \InvalidArgumentException
      *
@@ -156,49 +155,60 @@ class Phabric
             throw new \InvalidArgumentException('Entity not registered');
         }
     }
-    
+
     /**
-     * A convience method taking the name of a previously created entity and 
-     * a TableNode. Data is inserted into the data source as if calling 
-     * 'createFromTable' on the named entity directly.
-     * 
+     * A convenience method taking the name of a previously created entity and
+     * a data array. Data is inserted into the data source as if calling
+     * 'insert' on the named entity directly.
+     *
      * @param string    $entityName Name of a previously created entity.
-     * @param TableNode $table 
+     * @param array     $table      Array of Associative arrays describing rows
      * @param boolean   $default    Determines if default data values should be applied.
-     * 
+     *
      */
-    public function insertFromTable($entityName, TableNode $table, $default = null)
-    {
+    public function insert($entityName, $data, $default = null) {
         $entity = $this->getEntity($entityName);
-        
-        if($entity instanceof Entity)
-        {
-            return $entity->insertFromTable($table, $default);
-        }
-        else
-        {
-            throw new \RuntimeException('Specified entity name does not map to registered entity');
-        }
-    }
-    
-    /**
-     * A convience method taking the name of a previously created entity and a 
-     * TableNode. Data is used to update previously inserted database records.
-     * 
-     * @param Entity    $entityName
-     * @param TableNode $table 
-     * 
-     * @throws \RuntimeException When a record previously not inserted is specified
-     * 
-     * @return void
-     */
-    public function updateFromTable($entityName, TableNode $table)
-    {
-        $entity = $this->getEntity($entityName);
-        
-        $entity->updateFromTable($table);
+        return $entity->insert($data, $default);
     }
 
+    /**
+     * A convenience method taking the name of a previously created entity and
+     * a data array. Data is updated via the data source as if calling
+     * 'update' on the named entity directly.
+     *
+     * @param string    $entityName Name of a previously created entity.
+     * @param array     $table      Array of Associative arrays describing rows
+     * @param boolean   $default    Determines if default data values should be applied.
+     *
+     */
+    public function update($entityName, $data, $default = null) {
+        $entity = $this->getEntity($entityName);
+        return $entity->update($data);
+    }
+
+    /**
+     * The same as 'insert', but allows use of a Gherkin TableNode
+     *
+     * @param string    $entityName Name of a previously created entity.
+     * @param TableNode $table
+     * @param boolean   $default    Determines if default data values should be applied.
+     *
+     */
+    public function insertFromTable($entityName, $table, $default = null)
+    {
+        $this->insert($entityName, $table->getHash(), $default);
+    }
+
+    /**
+     * The same as 'update', but allows use of a Gherkin TableNode
+     *
+     * @param string    $entityName Name of a previously created entity.
+     * @param TableNode $table
+     *
+     */
+    public function updateFromTable($entityName, $table)
+    {
+        $this->update($entityName, $table->getHash());
+    }
 
 }
-
