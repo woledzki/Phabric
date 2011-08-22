@@ -1,7 +1,6 @@
 <?php
 namespace Phabric;
 use Doctrine\DBAL\Connection;
-use Behat\Gherkin\Node\TableNode;
 
 /**
  * This file is part of the Phabric.
@@ -33,10 +32,10 @@ class Entity
      * @var string
      */
     protected $tableName;
-    
+
     /**
      * The name of the primary Key column
-     * 
+     *
      * @var string
      */
     protected $pkCol;
@@ -77,11 +76,11 @@ class Entity
      * @var Phabric\Bus
      */
     protected $bus;
-    
+
     /**
-     * A registry of the items created 
-     * 
-     * @var array 
+     * A registry of the items created
+     *
+     * @var array
      */
     protected $namedItemsNameIdMap;
 
@@ -124,7 +123,7 @@ class Entity
             {
                 $this->setDefaults($defaults);
             }
-            
+
             if(isset($config['primaryKey']))
             {
                 $this->setPkCol($config['primaryKey']);
@@ -138,7 +137,7 @@ class Entity
      * @param Bus $bus
      *
      * @return void.
-     * 
+     *
      */
     public function setBus(Phabric $bus)
     {
@@ -147,7 +146,7 @@ class Entity
 
     /**
      * Set the human readable name of the entity
-     * 
+     *
      * @param string $name
      *
      * @return void
@@ -171,27 +170,27 @@ class Entity
 
     /**
      * Get the name of the primary key column of the table.
-     * 
+     *
      * @return string
      */
-    public function getPkCol() 
+    public function getPkCol()
     {
         return $this->pkCol;
     }
-    
+
     /**
      * Set the primary key column for this table.
-     * 
-     * @param string $pkCol 
-     * 
+     *
+     * @param string $pkCol
+     *
      * @return void
      */
-    public function setPkCol($pkCol) 
+    public function setPkCol($pkCol)
     {
         $this->pkCol = $pkCol;
     }
 
-        
+
     /**
      * Set the default values for this entity.
      * These are used to 'fill in the gaps' left by the gherkin tables.
@@ -215,7 +214,7 @@ class Entity
     {
         $this->nameTransformations = $transformations;
     }
-        
+
 
     /**
      * Sets the transformations used to transform values in the gherkin text.
@@ -232,108 +231,108 @@ class Entity
         }
     }
 
+
     /**
-     * Creates an entity based on data rom a gherkin table.
+     * Creates an entity based on data from an array.
      * By default the data is augmented by the default values supplied.
      *
-     * @param array   $data        Data from a gherkin table (top row of header with subsequent rows of data)
+     * @param array   $data        Array of associative arrays describing one row each
      * @param boolean $defaultFlag
      *
      * @return void
      */
-    public function insertFromTable(TableNode $table, $defaultFlag = true)
+    public function insert($data, $defaultFlag = true)
     {
-           
-        $data = $this->processTable($table);
-        
+
+        $data = $this->processTable($data);
+
         foreach($data as &$row)
         {
-            
+
             if($defaultFlag)
             {
                 $this->mergeDefaults($row);
             }
-            
+
             $this->db->insert($this->tableName, $row);
-            
+
             $firstElement = reset($row);
-            
+
             $this->namedItemsNameIdMap[$firstElement] = $this->db->lastInsertId();
         }
-        
+
     }
-    
+
     /**
      * Update a previously inserted entity with the new data from a gherkin table.
+     * NB - Rows will not be augmented with default values.
      *
-     * @param array $data Gherkin table data. NB - Never augmented with default values.
+     * @param array $data Array of associative arrays describing one row each
      *
      * @return void
      */
-    public function updateFromTable(TableNode $table)
+    public function update($data)
     {
         if(!isset($this->pkCol))
         {
             throw new \RuntimeException('No Primary key col set for this eneity.');
         }
-        
-        $procData = $this->processTable($table);
-        
+
+        $procData = $this->processTable($data);
+
         foreach($procData as $row)
         {
             $name = reset($row);
             $id = $this->getNamedItemId($name);
-            
+
             if(!$id)
             {
                 throw new \RuntimeException('ID for data: ' . $name . ' not found');
             }
-            
+
             $whereAr = array($this->pkCol => $id);
-            
+
             $this->db->update($this->tableName, $row, $whereAr);
         }
 
     }
-    
+
     /**
-     * Processes a table node. COnverts it into an array and applies any 
-     * transformations configured.
-     * 
-     * @param TableNode $table
-     * 
-     * @return array 
+     * Processes a table array. Applying any transformations configured.
+     *
+     * @param array $table
+     *
+     * @return array
      */
-    protected function processTable(TableNode $table)
+    protected function processTable($table)
     {
-        
         $rows = array();
-        
-        foreach($table->getHash() as $row)
+
+        foreach($table as $row)
         {
             $cols = array();
-            
+
             foreach($row as $colName => $colValue)
             {
                 $k = $this->applyNameTransformation($colName);
-                
+
                 $cols[$k] = $this->applyDataTranslation($k, $colValue);
             }
-            
+
             $rows[] = $cols;
-                
+
         }
-        
+
         return $rows;
     }
-    
+
     /**
      * Looks for a name translation for the given key and if found applies it.
      * Returns the original key if no transformation is found.
-     * 
+     *
      * @param string $key
-     * 
-     * @return string 
+     *
+     * @return string
      */
     protected function applyNameTransformation($key)
     {
@@ -345,17 +344,17 @@ class Entity
         {
             return strtolower($key);
         }
-            
+
     }
-    
+
     /**
-     * Looks for a data transformation for the given key and applies it to the 
+     * Looks for a data transformation for the given key and applies it to the
      * given value if found. Returns the original value if not found.
-     * 
+     *
      * @param string $key
      * @param string $value
-     * 
-     * @return string 
+     *
+     * @return string
      */
     protected function applyDataTranslation($key, $value)
     {
@@ -375,7 +374,7 @@ class Entity
      * a Gherkin table.
      *
      * This method should be used after an name based transformations.
-     * 
+     *
      * @param array $row
      *
      * @return void
@@ -386,17 +385,17 @@ class Entity
         {
             return;
         }
-        
-        $defaultsReq = array_diff_key($this->defaults, $row);   
+
+        $defaultsReq = array_diff_key($this->defaults, $row);
         $row = array_merge($row, $defaultsReq);
     }
-        
+
     /**
      * Gets the ID of a named item inserted into the database previously.
-     * 
+     *
      * @param string $name
-     * 
-     * @return integer|false 
+     *
+     * @return integer|false
      */
     public function getNamedItemId($name)
     {
@@ -411,4 +410,3 @@ class Entity
     }
 
 }
-
