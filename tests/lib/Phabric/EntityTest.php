@@ -31,7 +31,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $this->mockedConnection = m::mock('\Doctrine\DBAL\Connection');
+        $this->mockedConnection = m::mock('\Phabric\Datasource\IDatasource');
 
         $this->mockedConnection->shouldReceive('lastInsertId')
                 ->andReturn(12);
@@ -70,10 +70,8 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'A Great Conf!');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
-
-        $this->object->setTableName('Event');
 
         $this->object->insertFromTable($tableNode);
     }
@@ -101,10 +99,10 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'A Great Conf!');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
 
-        $this->object->setTableName('Event');
+
         $this->object->setNameTransformations(array('Date' => 'datetime',
             'Desc' => 'description'));
 
@@ -133,10 +131,9 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'TEST DESCRIPTION');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
 
-        $this->object->setTableName('Event');
         $this->object->setDefaults(array(
             'description' => 'TEST DESCRIPTION',
             'venue' => 'TEST VENUE'
@@ -168,10 +165,8 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'A Great Conf!');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
-
-        $this->object->setTableName('Event');
 
         $retFn = function($date) {
                     $date = \DateTime::createFromFormat('d/m/Y H:i', $date);
@@ -215,10 +210,9 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'TEST DESCRIPTION');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
 
-        $this->object->setTableName('Event');
         $this->object->setNameTransformations(array('Date' => 'datetime'));
 
         $this->object->setDefaults(array(
@@ -264,10 +258,12 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
             'description' => 'A Great Conf!');
 
         $this->mockedConnection->shouldReceive('insert')
-                ->with('Event', $expectedInsert)
+                ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
-
-        $this->object->setTableName('Event');
+        
+        $this->mockedConnection->shouldReceive('getNamedItemId')
+                ->with('\Phabric\Entity', 'PHPNW')
+                ->andReturn(12);
 
         $this->object->insertFromTable($tableNode);
 
@@ -306,68 +302,13 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                 ->once();
 
         $this->mockedConnection->shouldReceive('update')
-                ->with("event", $update, array("id" => 12))
+                ->with("\Phabric\Entity", $update)
                 ->once();
-
-
-        $this->object->setTableName('event');
-        $this->object->setPkCol('id');
 
         $this->object->insertFromTable($tableNode);
         $this->object->updateFromTable($tableNode);
     }
-        
-    /**
-     * @expectedException RuntimeException
-     */
-    public function testUpdateWithNoPkColSet()
-    {
-        $this->object->setTableName('event');
-        
-        $update = array(
-            'name' => 'PHPNW',
-            'datetime' => '2011-10-08 10:00:00',
-            'venue' => 'Ramada Hotel MAN',
-            'description' => 'A Great Conf!');
 
-        $upTableData = array(
-            $update
-        );
-
-        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getHash')
-                  ->never();
-
-        
-        $this->object->updateFromTable($tableNode);    
-    }
-    
-    /**
-     * @expectedException RuntimeException
-     */
-    public function testUpdateFromTableThrowsExceptionWhenNoPrevInsert() {
-        
-        $this->object->setTableName('event');
-        $this->object->setPkCol('id');
-        
-        $update = array(
-            'name' => 'PHPNW',
-            'datetime' => '2011-10-08 10:00:00',
-            'venue' => 'Ramada Hotel MAN',
-            'description' => 'A Great Conf!');
-
-        $upTableData = array(
-            $update
-        );
-
-        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
-        $tableNode->shouldReceive('getHash')
-                ->withNoArgs()
-                ->andReturn($upTableData)
-                ->once();
-        
-        $this->object->updateFromTable($tableNode);
-    }
 
 }
 

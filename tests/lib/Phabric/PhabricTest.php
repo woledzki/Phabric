@@ -28,7 +28,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $db = m::mock('\Doctrine\DBAL\Connection');
+        $db = m::mock('\Phabric\Datasource\IDatasource');
         $this->object = new Phabric($db);
     }
 

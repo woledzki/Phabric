@@ -18,7 +18,7 @@ default:
           event:
             tableName: 'event'
             primaryKey: 'id'
-            entityName: 'Event'
+            nameCol: 'name'
             nameTransformations:
               Date: datetime
               Desc: description
@@ -27,20 +27,20 @@ default:
           session:
             tableName: 'session'
             primaryKey: 'id'
-            entityName: 'Session'
+            nameCol: 'session_code'
             nameTransformations:
               Session Code: session_code
           attendee:
             tableName: 'attendee'
-            primaryKey: 'id'            
-            entityName: 'Attendee'
+            primaryKey: 'id' 
+            nameCol: 'name'
           vote:
             tableName: 'vote'
-            primaryKey: 'id'            
-            entityName: 'Vote'
+            primaryKey: 'id'
+            nameCol: null
             nameTransformations:
               Attendee: attendee_id
-              Session: session_id
+              Session Code: session_id
             dataTransformations:
               attendee_id: ATTENDEELOOKUP
               session_id: SESSIONLOOKUP

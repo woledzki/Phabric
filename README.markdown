@@ -156,9 +156,14 @@ Setting Up Phabric
 Phabric requires some setting up in the main feature context file of your behat 
 tests folder.
 
-Phabric makes use of the Doctrine DBAL. This allows support for many databases 
-'out of the box'. Most popular databases are supported including MySQL, Oracle 
-and MSSQL.
+Phabric requires a datasource to persist Gherkin tabkes to. Usually this is a
+relational database. Phabric ships with a Doctrine DBAL adapter. 
+This allows support for many databases 'out of the box'. Most popular databases 
+are supported including MySQL, Oracle and MSSQL. 
+
+If you wish to support non relational databases or databases that Donctrine does
+not support you can do so by writting an adapter and implementing Phabrics
+'IDatasource' interface.
 
 **Autoloading**
 Classes are loaded using the Doctrine Projects autoloader.
@@ -193,9 +198,13 @@ public function __construct(array $parameters) {
 
 ```
 
-A Doctrine DBAL connection (database connection class) needs to be created and injected into the Phabric object,
-this class manages your interactions with Phabric. Database connection parameters
-should be added to your behat.yml config file.
+A Doctrine DBAL connection (database connection class) needs to be created and 
+injected into a Phabric datasource object, this class manages interactions with 
+the datasource. 
+Database connection parameters should be added to your behat.yml config file.
+Also some basic meta data is inut about the 'entities' we wish to map.
+An entity is a Gherkin to DB table mapping, this is discussed further in
+later sections.
 
 ``` yaml
 default:
@@ -208,8 +217,34 @@ default:
         dbname:   'behat-demo'
         host:     '127.0.0.1'
         driver:   'pdo_mysql'
+      Phabric:
+        entities:
+          event:
+            tableName: 'event'
+            primaryKey: 'id'
+            nameCol: 'name'
+          session:
+            tableName: 'session'
+            primaryKey: 'id'
+            nameCol: 'session_code'
+          attendee:
+            tableName: 'attendee'
+            primaryKey: 'id' 
+            nameCol: 'name'
+          vote:
+            tableName: 'vote'
+            primaryKey: 'id'
+            nameCol: null
 
 ```
+
+**NB** Note that some basic table meta data is required in the Phabric section
+of the behat.yml file. tableName, primaryKey and nameCol.
+
+* tableName: The name of the table to nbe mapped eg 'event'
+* primaryKey: the name of the primary key column eg 'id'
+* nameCol: this is a column used to identify a piece of data inserted by phabric.
+  It can be any column in the database but should be unique. eg 'PHPNW'
 
 Creating the DBAL Connections and setting it as the database connection used by 
 Phabric:
@@ -220,20 +255,20 @@ Phabric:
 protected $phabric;
 
 public function __construct(array $parameters) {
+        
+        $config = new \Doctrine\DBAL\Configuration();
 
-    $config = new \Doctrine\DBAL\Configuration();
-
-    self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
-                'dbname' => $parameters['database']['dbname'],
-                'user' => $parameters['database']['username'],
-                'password' => $parameters['database']['password'],
-                'host' => $parameters['database']['host'],
-                'driver' => $parameters['database']['driver'],
-            ));
-
-
-
-    $this->phabric = new Phabric\Phabric(self::$db);
+        self::$db = \Doctrine\DBAL\DriverManager::getConnection(array(
+                    'dbname' => $parameters['database']['dbname'],
+                    'user' => $parameters['database']['username'],
+                    'password' => $parameters['database']['password'],
+                    'host' => $parameters['database']['host'],
+                    'driver' => $parameters['database']['driver'],
+                ));
+        
+    $datasource = new \Phabric\Datasource\Doctrine(self::$db, $parameters['Phabric']['entities']);
+    
+    $this->phabric = new Phabric\Phabric($datasource);
 
 }
 
@@ -249,7 +284,7 @@ The Phabric Class
 
 The Phabric object handles interaction with all the 'entities' (Gherkin table > 
 db table mappings) created when using Phabric.
-It accepts a database connection as it's only argument. It should be created in 
+It accepts a datasource as it's only argument. It should be created in 
 the constructor of the FeatureContext class and saved to a member variable (as 
 in the example above).
 

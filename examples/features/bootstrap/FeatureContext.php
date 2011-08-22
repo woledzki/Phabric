@@ -60,8 +60,10 @@ class FeatureContext extends BehatContext {
                     'host' => $parameters['database']['host'],
                     'driver' => $parameters['database']['driver'],
                 ));
+        
+        $datasource = new \Phabric\Datasource\Doctrine(self::$db, $parameters['Phabric']['entities']);
 
-        $this->phabric = new Phabric(self::$db);
+        $this->phabric = new Phabric($datasource);
 
         $this->phabric->createEntitiesFromConfig($parameters['Phabric']['entities']);
 

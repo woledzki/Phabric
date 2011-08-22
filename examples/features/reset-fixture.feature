@@ -1,8 +1,8 @@
 Feature: Phabric Example
-     As a Phabric user I want to be able to update entries previously inserted 
-    by Phabric.
+     As a Phabric user I want to be able to reset all previous inserts and 
+     updates on a fixture.
 
-Scenario: Data has only been inserted by Phabric
+Scenario: Data that has only been inserted by Phabric is reset correctly
     Given The following events exist
     | Name  | Date             | Venue                  | Desc             |
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
@@ -16,7 +16,7 @@ Scenario: Data has only been inserted by Phabric
     Then there sould be not data in the "event" table
 
 
-Scenario: Data has been inserted and updated by phabric
+Scenario: Data that has been inserted and updated by phabric is reset correctly
     Given The following events exist
     | Name  | Date             | Venue                  | Desc             |
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |

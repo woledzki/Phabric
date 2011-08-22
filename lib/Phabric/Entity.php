@@ -1,7 +1,9 @@
 <?php
 namespace Phabric;
+use Phabric\Datasource\IDatasource;
 use Doctrine\DBAL\Connection;
 use Behat\Gherkin\Node\TableNode;
+
 
 /**
  * This file is part of the Phabric.
@@ -33,13 +35,6 @@ class Entity
      * @var string
      */
     protected $tableName;
-    
-    /**
-     * The name of the primary Key column
-     * 
-     * @var string
-     */
-    protected $pkCol;
 
     /**
      * Tranlations - An array with human readable Gherkin table headers mapped to db columns.
@@ -63,11 +58,11 @@ class Entity
     protected $defaults;
 
     /**
-     * DBAL Instance.
+     * Datasource.
      *
-     * @var Doctrine\DBAL\Connection
+     * @var \Phabric\Datasource\IDatasource
      */
-    protected $db;
+    protected $ds;
 
     /**
      * An instance of the Phabric Bus.
@@ -77,13 +72,6 @@ class Entity
      * @var Phabric\Bus
      */
     protected $bus;
-    
-    /**
-     * A registry of the items created 
-     * 
-     * @var array 
-     */
-    protected $namedItemsNameIdMap;
 
     /**
      * Initialises an instance of the Phabric class.
@@ -92,9 +80,9 @@ class Entity
      * @param array                    $config
      *
      */
-    public function __construct(Connection $db, Phabric $bus, $config = null)
+    public function __construct(IDatasource $ds, Phabric $bus, $config = null)
     {
-        $this->db = $db;
+        $this->ds = $ds;
 
         $this->bus = $bus;
 
@@ -102,12 +90,7 @@ class Entity
         {
             if(isset($config['entityName']))
             {
-                $this->setEntityName($config['entityName']);
-            }
-
-            if(isset($config['tableName']))
-            {
-                $this->setTableName($config['tableName']);
+                $this->setName($config['entityName']);
             }
 
             if(isset($config['nameTransformations']))
@@ -125,10 +108,6 @@ class Entity
                 $this->setDefaults($defaults);
             }
             
-            if(isset($config['primaryKey']))
-            {
-                $this->setPkCol($config['primaryKey']);
-            }
         }
     }
 
@@ -152,46 +131,21 @@ class Entity
      *
      * @return void
      */
-    public function setEntityName($name)
+    public function setName($name)
     {
         $this->entityName = $name;
     }
-
+    
     /**
-     * Set the database table name for this entity.
-     *
-     * @param string $name
-     *
-     * @return void
-     */
-    public function setTableName($name)
-    {
-        $this->tableName = $name;
-    }
-
-    /**
-     * Get the name of the primary key column of the table.
+     * Get the human readable name of the entity.
      * 
      * @return string
      */
-    public function getPkCol() 
+    public function getName()
     {
-        return $this->pkCol;
+        return $this->entityName;
     }
-    
-    /**
-     * Set the primary key column for this table.
-     * 
-     * @param string $pkCol 
-     * 
-     * @return void
-     */
-    public function setPkCol($pkCol) 
-    {
-        $this->pkCol = $pkCol;
-    }
-
-        
+   
     /**
      * Set the default values for this entity.
      * These are used to 'fill in the gaps' left by the gherkin tables.
@@ -254,11 +208,8 @@ class Entity
                 $this->mergeDefaults($row);
             }
             
-            $this->db->insert($this->tableName, $row);
-            
-            $firstElement = reset($row);
-            
-            $this->namedItemsNameIdMap[$firstElement] = $this->db->lastInsertId();
+            $this->ds->insert($this, $row);
+
         }
         
     }
@@ -272,26 +223,12 @@ class Entity
      */
     public function updateFromTable(TableNode $table)
     {
-        if(!isset($this->pkCol))
-        {
-            throw new \RuntimeException('No Primary key col set for this eneity.');
-        }
         
         $procData = $this->processTable($table);
         
         foreach($procData as $row)
-        {
-            $name = reset($row);
-            $id = $this->getNamedItemId($name);
-            
-            if(!$id)
-            {
-                throw new \RuntimeException('ID for data: ' . $name . ' not found');
-            }
-            
-            $whereAr = array($this->pkCol => $id);
-            
-            $this->db->update($this->tableName, $row, $whereAr);
+        { 
+            $this->ds->update($this, $row);
         }
 
     }
@@ -390,25 +327,12 @@ class Entity
         $defaultsReq = array_diff_key($this->defaults, $row);   
         $row = array_merge($row, $defaultsReq);
     }
-        
-    /**
-     * Gets the ID of a named item inserted into the database previously.
-     * 
-     * @param string $name
-     * 
-     * @return integer|false 
-     */
+    
     public function getNamedItemId($name)
     {
-        if(isset($this->namedItemsNameIdMap[$name]))
-        {
-            return $this->namedItemsNameIdMap[$name];
-        }
-        else
-        {
-            return false;
-        }
+        return $this->ds->getNamedItemId($this, $name);
     }
+        
 
 }
 

@@ -1,5 +1,6 @@
 <?php
 namespace Phabric;
+use Phabric\Datasource\IDatasource;
 use Behat\Gherkin\Node\TableNode;
 
 /**
@@ -48,7 +49,7 @@ class Phabric
      * 
      * @return void
      */
-    public function __construct($ds)
+    public function __construct(IDatasource $ds)
     {
         $this->datasource = $ds;
     }
@@ -82,6 +83,9 @@ class Phabric
     {
         foreach($config as $name => $enConf)
         {
+            
+            $enConf = array_merge($enConf, array('entityName' => $name));
+            
             $this->createEntity($name, $enConf);
         }
     }
