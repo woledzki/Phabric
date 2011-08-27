@@ -61,7 +61,7 @@ to explicitly include them in the gherkin.
 
 The aim of these features is to assist the user in setting up a scenario in a 
 readable and maintainable way. It should facilitate behaviour driven development
-as once the initial creator steps have been anyone will be able to mark up 
+as once the initial creator steps have been setup anyone will be able to mark up 
 entities in your system (testers and BAs included!).  
 
 Preview
@@ -111,8 +111,8 @@ The database table after data creation:
 
 </pre>
 
-*Note:* Gherkin column names mapped to database coulm names and some data 
-(datetime) transformed.
+*Note:* Gherkin column names are mapped to database column names and some data 
+(datetime) is transformed.
 
 For those keen on doing rather than reading there are working examples in the 
 'examples' folder. See section below for instructions on setting up the 
@@ -166,10 +166,10 @@ not support you can do so by writting an adapter and implementing Phabrics
 'IDatasource' interface.
 
 **Autoloading**
-Classes are loaded using the Doctrine Projects autoloader.
+Classes are loaded using the Doctrine Project autoloader.
 
 Doctrine and Phabric Classes need to be registered with the auto loader in the 
-Feature Contexts File:
+Feature Context File:
 
 ``` php 
 <?php 
