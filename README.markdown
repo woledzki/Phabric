@@ -156,7 +156,7 @@ Setting Up Phabric
 Phabric requires some setting up in the main feature context file of your behat 
 tests folder.
 
-Phabric requires a datasource to persist Gherkin tabkes to. Usually this is a
+Phabric requires a datasource to persist Gherkin tables to. Usually this is a
 relational database. Phabric ships with a Doctrine DBAL adapter. 
 This allows support for many databases 'out of the box'. Most popular databases 
 are supported including MySQL, Oracle and MSSQL. 
@@ -202,7 +202,7 @@ A Doctrine DBAL connection (database connection class) needs to be created and
 injected into a Phabric datasource object, this class manages interactions with 
 the datasource. 
 Database connection parameters should be added to your behat.yml config file.
-Also some basic meta data is inut about the 'entities' we wish to map.
+Also some basic meta data is input about the 'entities' we wish to map.
 An entity is a Gherkin to DB table mapping, this is discussed further in
 later sections.
 
