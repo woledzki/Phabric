@@ -412,7 +412,7 @@ First create an entity:
 
 ```
 
-The set some column name transformations:
+Then set some column name transformations:
 
 ``` php 
 
@@ -475,7 +475,7 @@ Then set the transformation(s) with the entity.
 
 ```
 
-*Note* The use of the real database column name when registering data 
+*Note* Notice the use of the real database column name when registering data 
 transformations closures.
 
 ** Important: Registration of closures with the bus and registering 
@@ -504,7 +504,7 @@ Defaults are set using an array of database column names and values:
 
 ```
 
-To override the default ensure a name transformations is set up (optionally 
+To override the default ensure a name transformation is set up (optionally 
 with a data transformation) and include the column in the Gherkin table.
 
 ``` php 
@@ -536,7 +536,7 @@ with a data transformation) and include the column in the Gherkin table.
     
     $event->setDataTransformations(array(
                                 'ev_date' => UKTOMYSQLDATE
-                                'ev__disp' => 'YESNOFLAG'
+                                'ev_disp' => 'YESNOFLAG'
                                 ));
 
 ```
