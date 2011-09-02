@@ -397,7 +397,7 @@ Column Name Transformations
 ---------------------------
 
 The goal of column name transformations is to change often ugly looking database 
-column names to human readable and business friends names.
+column names to human readable and business friendly names.
 
 In this example we want to change column names like 'ev_name' and 
 'ev_description' to the more friendly 'Name' and 'Description'.
