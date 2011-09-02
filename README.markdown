@@ -241,8 +241,8 @@ default:
 **NB** Note that some basic table meta data is required in the Phabric section
 of the behat.yml file. tableName, primaryKey and nameCol.
 
-* tableName: The name of the table to nbe mapped eg 'event'
-* primaryKey: the name of the primary key column eg 'id'
+* tableName: The name of the table to be mapped e.g. 'event'
+* primaryKey: the name of the primary key column e.g. 'id'
 * nameCol: this is a column used to identify a piece of data inserted by phabric.
   It can be any column in the database but should be unique. eg 'PHPNW'
 
