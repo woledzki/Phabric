@@ -147,7 +147,7 @@ Then Doctrines submodules
 * cd lib/Vendor/Doctrine/
 
 * git submodule init lib/vendor/doctrine-common/
-* git submodule init --recursive
+* git submodule update --recursive
 
 
 Setting Up Phabric 
