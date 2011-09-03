@@ -827,7 +827,7 @@ By putting Phabric config under the FeatureContext>Parameters section it is
 available in the $parameters array of the Behat FeatureContext constructor.
 This is where all the configuration of the Phabric bus and entities occurs.
 
-As you can see name and data transformations, the database table an entity maps to 
+As you can see name and data transformations, name of database table an entity maps to 
 and default values can be included in config.
 
 In the constructor of the FeatureContext class:
