@@ -58,6 +58,15 @@ class Entity
     protected $defaults;
 
     /**
+     * Configurations options for the entity
+     *
+     * @var array
+     */
+    protected $options = array(
+        'nameCase' => 'lower',
+    );
+
+    /**
      * Datasource.
      *
      * @var \Phabric\Datasource\IDatasource
@@ -107,6 +116,11 @@ class Entity
             {
                 $this->setDefaults($defaults);
             }
+
+            if(isset($config['options']))
+            {
+                $this->setOptions($config['options']);
+            }
             
         }
     }
@@ -144,6 +158,62 @@ class Entity
     public function getName()
     {
         return $this->entityName;
+    }
+
+    /**
+     * Set some of the entities options
+     *
+     * @param array $options
+     * @return void
+     */
+    public function setOptions(array $options)
+    {
+        foreach($options as $opt => $value) {
+            $this->setOption($opt, $value);
+        }
+    }
+
+    /**
+     * Get the entities configuration options
+     *
+     * @return string
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Set one of the entities configuration options
+     *
+     * @param string $option
+     * @param mixed $value
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function setOption($option, $value)
+    {
+        if (!isset($this->options[$option])) {
+            throw new \InvalidArgumentException("$option is not a valid entity option");
+        }
+
+        $this->options[$option] = $value;
+    }
+
+    /**
+     * Get one of the entities configuration options
+     *
+     * @param string $option
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    public function getOption($option)
+    {
+        if (!isset($this->options[$option])) {
+            throw new \InvalidArgumentException("$option is not a valid entity option");
+        }
+
+        return $this->options[$option];
     }
    
     /**
@@ -276,11 +346,11 @@ class Entity
     {
         if(isset($this->nameTransformations[$key]))
         {
-            return strtolower($this->nameTransformations[$key]);
+            return $this->caseTransform($this->nameTransformations[$key]);
         }
         else
         {
-            return strtolower($key);
+            return $this->caseTransform($key);
         }
             
     }
@@ -304,6 +374,30 @@ class Entity
         else
         {
             return $value;
+        }
+    }
+
+    /**
+     * Transform a string based on this entities case configuration
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function caseTransform($name)
+    {
+        switch ($this->options['nameCase']) {
+            case 'upper':
+                return strtoupper($name);
+                break;
+
+            case 'mixed':
+                return $name;
+                break;
+
+            case 'lower':
+            default:
+                return strtolower($name);
+                break;
         }
     }
 
