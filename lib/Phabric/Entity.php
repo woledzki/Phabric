@@ -44,6 +44,13 @@ class Entity
     protected $nameTransformations = array();
 
     /**
+     * Default name transformation
+     *
+     * @var string|callback
+     */
+    protected $defaultNameTransformation = 'strtolower';
+
+    /**
      * Data Transformations - An array of database col names and transformation types.
      *
      * @var array
@@ -63,7 +70,6 @@ class Entity
      * @var array
      */
     protected $options = array(
-        'nameCase' => 'lower',
     );
 
     /**
@@ -120,6 +126,11 @@ class Entity
             if(isset($config['options']))
             {
                 $this->setOptions($config['options']);
+            }
+
+            if(isset($config['defaultNameTransformation']))
+            {
+                $this->setDefaultNameTransformation($config['defaultNameTransformation']);
             }
             
         }
@@ -257,6 +268,27 @@ class Entity
     }
 
     /**
+     * Set the default name transformation
+     *
+     * @param callback|string $nameTransformation
+     * @return void
+     */
+    public function setDefaultNameTransformation($nameTransformation)
+    {
+        $this->defaultNameTransformation = $nameTransformation;
+    }
+
+    /**
+     * Get the default name transformation
+     *
+     * @return callback|string
+     */
+    public function getDefaultNameTransformation()
+    {
+        return $this->defaultNameTransformation;
+    }
+
+    /**
      * Creates an entity based on data rom a gherkin table.
      * By default the data is augmented by the default values supplied.
      *
@@ -269,7 +301,7 @@ class Entity
     {
            
         $data = $this->processTable($table);
-        
+
         foreach($data as &$row)
         {
             
@@ -346,13 +378,21 @@ class Entity
     {
         if(isset($this->nameTransformations[$key]))
         {
-            return $this->caseTransform($this->nameTransformations[$key]);
+            return $this->nameTransformations[$key];
         }
-        else
+        else if(null !== $this->defaultNameTransformation) 
         {
-            return $this->caseTransform($key);
+            if(is_callable($this->defaultNameTransformation))
+            {
+                $fn = $this->defaultNameTransformation;
+                return call_user_func($fn, $key);
+            }
+
+            $fn = $this->bus->getDataTransformation($this->defaultNameTransformation);
+            return call_user_func($fn, $key, $this->bus);
         }
             
+        return $key;
     }
     
     /**
@@ -374,30 +414,6 @@ class Entity
         else
         {
             return $value;
-        }
-    }
-
-    /**
-     * Transform a string based on this entities case configuration
-     *
-     * @param string $name
-     * @return string
-     */
-    protected function caseTransform($name)
-    {
-        switch ($this->options['nameCase']) {
-            case 'upper':
-                return strtoupper($name);
-                break;
-
-            case 'mixed':
-                return $name;
-                break;
-
-            case 'lower':
-            default:
-                return strtolower($name);
-                break;
         }
     }
 

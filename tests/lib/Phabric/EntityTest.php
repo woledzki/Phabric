@@ -109,7 +109,7 @@ class EntityTest extends \PHPUnit_Framework_TestCase {
         $this->object->insertFromTable($tableNode);
     }
 
-    public function testInsertFromTableWithMixedCaseNameTransformations() {
+    public function testInsertFromTableWithNullDefaultNameTransformation() {
 
 
         $tableData = array(
@@ -136,14 +136,14 @@ class EntityTest extends \PHPUnit_Framework_TestCase {
                 ->once();
 
 
-        $this->object->setOption('nameCase', 'mixed');
+        $this->object->setDefaultNameTransformation(null);
         $this->object->setNameTransformations(array('Date' => 'DateTime',
             'Desc' => 'Description'));
 
         $this->object->insertFromTable($tableNode);
     }
 
-    public function testInsertFromTableWithUpperCaseNameTransformations() {
+    public function testInsertFromTableWithCallableDefaultNameTransformation() {
 
 
         $tableData = array(
@@ -161,22 +161,64 @@ class EntityTest extends \PHPUnit_Framework_TestCase {
                 ->once();
 
         $expectedInsert = array('NAME' => 'PHPNW',
-            'DATETIME' => '2011-10-08 09:00:00',
+            'DateTime' => '2011-10-08 09:00:00',
             'VENUE' => 'Ramada Hotel',
-            'DESCRIPTION' => 'A Great Conf!');
+            'Description' => 'A Great Conf!');
 
         $this->mockedConnection->shouldReceive('insert')
                 ->with('\Phabric\Entity', $expectedInsert)
                 ->once();
 
 
-        $this->object->setOption('nameCase', 'upper');
+        $this->object->setDefaultNameTransformation('strtoupper');
         $this->object->setNameTransformations(array('Date' => 'DateTime',
             'Desc' => 'Description'));
 
         $this->object->insertFromTable($tableNode);
     }
 
+    public function testInsertFromTableWithNamedDefaultDataTransformation() {
+
+
+        $tableData = array(
+            array(
+                'Name' => 'PHPNW',
+                'Date' => '2011-10-08 09:00:00',
+                'The Venue' => 'Ramada Hotel',
+                'Desc' => 'A Great Conf!')
+        );
+
+        $tableNode = m::mock('Behat\Gherkin\Node\TableNode');
+        $tableNode->shouldReceive('getHash')
+                ->withNoArgs()
+                ->andReturn($tableData)
+                ->once();
+
+        $expectedInsert = array('name' => 'PHPNW',
+            'DateTime' => '2011-10-08 09:00:00',
+            'the_venue' => 'Ramada Hotel',
+            'Description' => 'A Great Conf!');
+
+        $this->mockedConnection->shouldReceive('insert')
+                ->with('\Phabric\Entity', $expectedInsert)
+                ->once();
+
+        $retFn = function($name) {
+                // oh no, it's a snake...
+                return strtolower(str_replace(' ', '_', $name));
+                };
+
+        $this->mockedBus->shouldReceive('getDataTransformation')
+                ->with('SNAKE_CASE')
+                ->twice()
+                ->andReturn($retFn);
+
+        $this->object->setDefaultNameTransformation('SNAKE_CASE');
+        $this->object->setNameTransformations(array('Date' => 'DateTime',
+            'Desc' => 'Description'));
+
+        $this->object->insertFromTable($tableNode);
+    }
 
     public function testInsertFromTableWithDefaults() {
 
@@ -394,16 +436,7 @@ class EntityTest extends \PHPUnit_Framework_TestCase {
         $this->object->getOption('davedavedave');
     }
 
-    public function testGetSetOptions()
-    {
-        $this->object->setOptions(array(
-            'nameCase' => 'mixed',
-        ));
 
-        $options = $this->object->getOptions();
-
-        $this->assertEquals('mixed', $options['nameCase']);
-    }
 }
 
 ?>
