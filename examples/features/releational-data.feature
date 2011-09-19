@@ -9,10 +9,10 @@ Scenario:
     | BDD          | BDD with behat        | 12:50 | Test driven behaviour development is cool |
     | CI           | Continous Integration | 13:30 | Integrate this!                           |
     And the following attendees exist
-    | name                  |
-    | Jack The Lad          |
-    | Simple Simon          |
-    | Peter Pan             |
+    | name                  | Dietary Requirements |
+    | Jack The Lad          | N/A                  |
+    | Simple Simon          | Meat                 |
+    | Peter Pan             | Veg                  |
     And the following votes exist
     | Attendee     | Session Code | Vote | 
     | Jack The Lad | BDD          | UP   |
