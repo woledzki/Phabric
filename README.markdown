@@ -430,6 +430,17 @@ $event->setNameTransformations(array(
 ** Important: Column Name transformations get applied first. When referencing 
 columns in subsequent methods / configs use the database column name ** 
 
+By default, any columns without a specific mapping get transformed to lowercase.
+This can be configured by setting the defaultNameTransformation on an entity
+
+<?php
+
+$event->setDefaultNameTransformation(function($name) {
+    return str_replace(' ', '_', strtolower($name));
+});
+
+...
+
 Column Data Transformations
 ---------------------------
 
