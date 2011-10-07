@@ -44,6 +44,14 @@ class Doctrine implements IDatasource
     protected $nameIdMap;
     
     /**
+     * Map of inserts and updates with respective ID's
+     * indexed by tablename => array('insert','update)'
+     * 
+     * @var array 
+     */
+    protected $resetMap = array();
+    
+    /**
      * Initialises an instance of the Doctrine datasource class.
      * 
      * @param \Doctrine\DBAL\Connection $connection
@@ -169,7 +177,7 @@ class Doctrine implements IDatasource
         
         if(!is_null($phName))
         {
-            $this->addManagedData($tableName, $data[$phName], $insertId);
+            $this->addManagedData($name, $data[$phName], $insertId);
         }
         
         return $insertId;
@@ -222,9 +230,12 @@ class Doctrine implements IDatasource
      * 
      * @return void
      */
-    protected function addManagedData($tableName, $nameData, $id)
+    protected function addManagedData($entity, $nameData, $id)
     {        
+        $tableName = $this->tableMappings[$entity]['tableName'];
+        
         $this->nameIdMap[$tableName][$nameData] = $id;
+        $this->resetMap[$entity]['insert'][] = $id;
     }
     
     /**
@@ -278,7 +289,25 @@ class Doctrine implements IDatasource
      */
     public function reset() 
     {
-        
+        var_dump($this->resetMap);
+        foreach($this->resetMap as $entity)
+        {
+            
+            if(isset($entity['insert']))
+            {
+                foreach($entity['insert'] as $record)
+                {
+                    $tableName = $this->tableMappings[$entity]['tableName'];
+                    $pKeyCol = $this->tableMappings[$entity]['primaryKey'];
+                    var_dump($tableName, $pKeyCol, $record);
+                    $this->connection->delete($tableName, array($pKeyCol => $record));
+                }
+            }
+            if(isset($entity['update']))
+            {
+                
+            }
+        }
     }
 
     /**

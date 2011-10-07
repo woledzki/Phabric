@@ -202,6 +202,16 @@ class Phabric
         
         $entity->updateFromTable($table);
     }
+    
+    /**
+     * Resets all inserts and updates made by Phabric.
+     * 
+     * @return void
+     */
+    public function reset()
+    {
+        $this->datasource->reset();
+    }
 
 
 }

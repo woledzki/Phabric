@@ -214,5 +214,30 @@ class FeatureContext extends BehatContext {
     {
         $this->phabric->updateFromTable('event', $table);
     }
+    
+        /**
+     * @When /^I reset Phabric$/
+     */
+    public function iResetPhabric()
+    {
+       $this->phabric->reset();
+    }
+
+    /**
+     * @Then /^there sould be not data in the "([^"]*)" table$/
+     */
+    public function thereSouldBeNotDataInTheTable($table)
+    {
+       $query = 'SELECT count(*) as records FROM ' . $table;
+       
+       $st = self::$db->query($query);
+       
+       $result = $st->fetch();
+       
+       if($result['records'] > 0)
+       {
+           throw new Exception("The $table table should be empty. It contains " . $result['records'] . ' records');
+       }
+    }
 
 }
