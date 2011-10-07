@@ -61,7 +61,7 @@ to explicitly include them in the gherkin.
 
 The aim of these features is to assist the user in setting up a scenario in a 
 readable and maintainable way. It should facilitate behaviour driven development
-as once the initial creator steps have been anyone will be able to mark up 
+as once the initial creator steps have been setup anyone will be able to mark up 
 entities in your system (testers and BAs included!).  
 
 Preview
@@ -111,8 +111,8 @@ The database table after data creation:
 
 </pre>
 
-*Note:* Gherkin column names mapped to database coulm names and some data 
-(datetime) transformed.
+*Note:* Gherkin column names are mapped to database column names and some data 
+(datetime) is transformed.
 
 For those keen on doing rather than reading there are working examples in the 
 'examples' folder. See section below for instructions on setting up the 
@@ -147,7 +147,7 @@ Then Doctrines submodules
 * cd lib/Vendor/Doctrine/
 
 * git submodule init lib/vendor/doctrine-common/
-* git submodule init --recursive
+* git submodule update --recursive
 
 
 Setting Up Phabric 
@@ -156,7 +156,7 @@ Setting Up Phabric
 Phabric requires some setting up in the main feature context file of your behat 
 tests folder.
 
-Phabric requires a datasource to persist Gherkin tabkes to. Usually this is a
+Phabric requires a datasource to persist Gherkin tables to. Usually this is a
 relational database. Phabric ships with a Doctrine DBAL adapter. 
 This allows support for many databases 'out of the box'. Most popular databases 
 are supported including MySQL, Oracle and MSSQL. 
@@ -166,10 +166,10 @@ not support you can do so by writting an adapter and implementing Phabrics
 'IDatasource' interface.
 
 **Autoloading**
-Classes are loaded using the Doctrine Projects autoloader.
+Classes are loaded using the Doctrine Project autoloader.
 
 Doctrine and Phabric Classes need to be registered with the auto loader in the 
-Feature Contexts File:
+Feature Context File:
 
 ``` php 
 <?php 
@@ -202,7 +202,7 @@ A Doctrine DBAL connection (database connection class) needs to be created and
 injected into a Phabric datasource object, this class manages interactions with 
 the datasource. 
 Database connection parameters should be added to your behat.yml config file.
-Also some basic meta data is inut about the 'entities' we wish to map.
+Also some basic meta data is input about the 'entities' we wish to map.
 An entity is a Gherkin to DB table mapping, this is discussed further in
 later sections.
 
@@ -241,8 +241,8 @@ default:
 **NB** Note that some basic table meta data is required in the Phabric section
 of the behat.yml file. tableName, primaryKey and nameCol.
 
-* tableName: The name of the table to nbe mapped eg 'event'
-* primaryKey: the name of the primary key column eg 'id'
+* tableName: The name of the table to be mapped e.g. 'event'
+* primaryKey: the name of the primary key column e.g. 'id'
 * nameCol: this is a column used to identify a piece of data inserted by phabric.
   It can be any column in the database but should be unique. eg 'PHPNW'
 
@@ -397,7 +397,7 @@ Column Name Transformations
 ---------------------------
 
 The goal of column name transformations is to change often ugly looking database 
-column names to human readable and business friends names.
+column names to human readable and business friendly names.
 
 In this example we want to change column names like 'ev_name' and 
 'ev_description' to the more friendly 'Name' and 'Description'.
@@ -412,7 +412,7 @@ First create an entity:
 
 ```
 
-The set some column name transformations:
+Then set some column name transformations:
 
 ``` php 
 
@@ -475,7 +475,7 @@ Then set the transformation(s) with the entity.
 
 ```
 
-*Note* The use of the real database column name when registering data 
+*Note* Notice the use of the real database column name when registering data 
 transformations closures.
 
 ** Important: Registration of closures with the bus and registering 
@@ -504,7 +504,7 @@ Defaults are set using an array of database column names and values:
 
 ```
 
-To override the default ensure a name transformations is set up (optionally 
+To override the default ensure a name transformation is set up (optionally 
 with a data transformation) and include the column in the Gherkin table.
 
 ``` php 
@@ -536,7 +536,7 @@ with a data transformation) and include the column in the Gherkin table.
     
     $event->setDataTransformations(array(
                                 'ev_date' => UKTOMYSQLDATE
-                                'ev__disp' => 'YESNOFLAG'
+                                'ev_disp' => 'YESNOFLAG'
                                 ));
 
 ```
@@ -827,7 +827,7 @@ By putting Phabric config under the FeatureContext>Parameters section it is
 available in the $parameters array of the Behat FeatureContext constructor.
 This is where all the configuration of the Phabric bus and entities occurs.
 
-As you can see name and data transformations, the database table an entity maps to 
+As you can see name and data transformations, name of database table an entity maps to 
 and default values can be included in config.
 
 In the constructor of the FeatureContext class:
