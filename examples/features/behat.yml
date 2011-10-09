@@ -34,6 +34,7 @@ default:
             tableName: 'attendee'
             primaryKey: 'id' 
             nameCol: 'name'
+            defaultNameTransformation: SNAKECASE
           vote:
             tableName: 'vote'
             primaryKey: 'id'
