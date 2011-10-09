@@ -240,5 +240,14 @@ class FeatureContext extends BehatContext {
            throw new Exception("The $table table should be empty. It contains " . $result['records'] . ' records');
        }
     }
+    
+    /**
+     * @Given /^data was loaded independantley of Phabric$/
+     */
+    public function anDataWasLoadedIndependantleyOfPhabric()
+    {
+        throw new PendingException();
+    }
+
 
 }

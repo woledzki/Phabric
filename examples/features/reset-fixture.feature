@@ -34,7 +34,7 @@ Scenario: Data that has been inserted and updated by phabric is reset correctly
     Then there sould be not data in the "event" table
 
 Scenario: Existing data is not removed by a reset
-    Given An additional feature was loaded outside phabric
+    Given data was loaded independantley of Phabric
     And The following events exist
     | Name  | Date             | Venue                  | Desc             |
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
@@ -47,8 +47,11 @@ Scenario: Existing data is not removed by a reset
     | name  | datetime            | venue                   | description      |
     | PHPNW | 2011-10-08 10:00:00 | Ramada Hotel MANCHESTER | An awesome conf! |
     | PHPUK | 2012-02-27 10:00:00 | London Business Center  | Quite good conf. |
+    | PBC11 | 2011-10-28 09:00:00 | Barcellona              | HOT   good conf. |
     When I reset Phabric
-    Then the "event" table should have 1 record
+    Then I should see the following records
+    | name  | datetime            | venue                  | description      |
+    | PBC11 | 2011-10-28 09:00:00 | Barcellona             | HOT   good conf. |
 
 
 
