@@ -21,10 +21,11 @@ Scenario: Data that has been inserted and updated by phabric is reset correctly
     | Name  | Date             | Venue                  | Desc             |
     | PHPNW | 08/10/2011 09:00 | Ramada Hotel           | An awesome conf! |
     | PHPUK | 27/02/2012 09:00 | London Business Center | Quite good conf. |
-    When The following events are updated
+    And The following events are updated
     | Name  | Date             | Venue                   | Desc             |
     | PHPNW | 08/10/2011 10:00 | Ramada Hotel MANCHESTER | An awesome conf! |
     | PHPUK | 27/02/2012 10:00 | London Business Center  | Quite good conf. |
+    When I select all records from the event table    
     Then I should see the following records
     | name  | datetime            | venue                   | description      |
     | PHPNW | 2011-10-08 10:00:00 | Ramada Hotel MANCHESTER | An awesome conf! |

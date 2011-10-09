@@ -144,6 +144,7 @@ class FeatureContext extends BehatContext {
      * @Then /^I should see the following records$/
      */
     public function iShouldSeeTheFollowingRecords(TableNode $table) {
+        
         // Get the col names
         $topRow = reset($this->qResult);
 
