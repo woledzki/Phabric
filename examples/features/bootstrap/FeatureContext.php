@@ -244,9 +244,26 @@ class FeatureContext extends BehatContext {
     /**
      * @Given /^data was loaded independantley of Phabric$/
      */
-    public function anDataWasLoadedIndependantleyOfPhabric()
+    public function dataWasLoadedIndependantleyOfPhabric()
     {
-        throw new PendingException();
+        $data = array(
+            'name' => 'PBC11',
+            'datetime'=> '2011-10-28 09:00:00',
+            'venue' => 'Barcellona',
+            'description' => 'HOT conf'
+        );
+        
+        $db = self::$db->insert('event', $data);
+        
+    }
+    
+    
+    /**
+     * @When /^I use phabric to update data not managed by phabric$/
+     */
+    public function iUsePhabricToUpdateDataNotManagedByPhabric(TableNode $table)
+    {
+        $this->phabric->updateFromTable('event', $table);
     }
 
 
