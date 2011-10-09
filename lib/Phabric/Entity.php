@@ -44,6 +44,13 @@ class Entity
     protected $nameTransformations = array();
 
     /**
+     * Default name transformation
+     *
+     * @var string|callback
+     */
+    protected $defaultNameTransformation = 'strtolower';
+
+    /**
      * Data Transformations - An array of database col names and transformation types.
      *
      * @var array
@@ -56,6 +63,14 @@ class Entity
      * @var array
      */
     protected $defaults;
+
+    /**
+     * Configurations options for the entity
+     *
+     * @var array
+     */
+    protected $options = array(
+    );
 
     /**
      * Datasource.
@@ -107,6 +122,16 @@ class Entity
             {
                 $this->setDefaults($defaults);
             }
+
+            if(isset($config['options']))
+            {
+                $this->setOptions($config['options']);
+            }
+
+            if(isset($config['defaultNameTransformation']))
+            {
+                $this->setDefaultNameTransformation($config['defaultNameTransformation']);
+            }
             
         }
     }
@@ -144,6 +169,62 @@ class Entity
     public function getName()
     {
         return $this->entityName;
+    }
+
+    /**
+     * Set some of the entities options
+     *
+     * @param array $options
+     * @return void
+     */
+    public function setOptions(array $options)
+    {
+        foreach($options as $opt => $value) {
+            $this->setOption($opt, $value);
+        }
+    }
+
+    /**
+     * Get the entities configuration options
+     *
+     * @return string
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Set one of the entities configuration options
+     *
+     * @param string $option
+     * @param mixed $value
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function setOption($option, $value)
+    {
+        if (!isset($this->options[$option])) {
+            throw new \InvalidArgumentException("$option is not a valid entity option");
+        }
+
+        $this->options[$option] = $value;
+    }
+
+    /**
+     * Get one of the entities configuration options
+     *
+     * @param string $option
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    public function getOption($option)
+    {
+        if (!isset($this->options[$option])) {
+            throw new \InvalidArgumentException("$option is not a valid entity option");
+        }
+
+        return $this->options[$option];
     }
    
     /**
@@ -187,6 +268,27 @@ class Entity
     }
 
     /**
+     * Set the default name transformation
+     *
+     * @param callback|string $nameTransformation
+     * @return void
+     */
+    public function setDefaultNameTransformation($nameTransformation)
+    {
+        $this->defaultNameTransformation = $nameTransformation;
+    }
+
+    /**
+     * Get the default name transformation
+     *
+     * @return callback|string
+     */
+    public function getDefaultNameTransformation()
+    {
+        return $this->defaultNameTransformation;
+    }
+
+    /**
      * Creates an entity based on data rom a gherkin table.
      * By default the data is augmented by the default values supplied.
      *
@@ -199,7 +301,7 @@ class Entity
     {
            
         $data = $this->processTable($table);
-        
+
         foreach($data as &$row)
         {
             
@@ -276,13 +378,21 @@ class Entity
     {
         if(isset($this->nameTransformations[$key]))
         {
-            return strtolower($this->nameTransformations[$key]);
+            return $this->nameTransformations[$key];
         }
-        else
+        else if(null !== $this->defaultNameTransformation) 
         {
-            return strtolower($key);
+            if(is_callable($this->defaultNameTransformation))
+            {
+                $fn = $this->defaultNameTransformation;
+                return call_user_func($fn, $key);
+            }
+
+            $fn = $this->bus->getDataTransformation($this->defaultNameTransformation);
+            return call_user_func($fn, $key, $this->bus);
         }
             
+        return $key;
     }
     
     /**
