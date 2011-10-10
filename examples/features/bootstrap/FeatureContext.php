@@ -105,6 +105,11 @@ class FeatureContext extends BehatContext {
                             return 0;
                     }
                 });
+
+        $this->phabric->addDataTransformation(
+                'SNAKECASE', function($name) {
+                    return str_replace(' ', '_', strtolower($name));
+                });
     }
 
     /**
