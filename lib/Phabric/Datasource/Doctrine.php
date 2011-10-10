@@ -212,14 +212,52 @@ class Doctrine implements IDatasource
 
         if(!isset($this->nameIdMap[$tableName][$data[$phName]]))
         {
-            throw new \RuntimeException('Attempt to update data not managed by Phabric');
+            $initData = $this->selectPreloadedData($tableName, $phName, $data);
+            $this->resetMap[$tableName]['update'][$initData[$idCol]] = $initData;
+            $whereAr = array($idCol => $initData[$idCol]);
         }
-        
-        $whereAr = array($idCol => $this->nameIdMap[$tableName][$data[$phName]]);
+        else
+        {
+            $whereAr = array($idCol => $this->nameIdMap[$tableName][$data[$phName]]);
+        }
         
         $this->connection->update($tableName, $data, $whereAr);
     }
     
+    /**
+     * Selects data from the database not managed by Phabric.
+     * Used to select a copy of the data before update in order to allow
+     * roll back.
+     * 
+     * @param string $tableName Name of table to query
+     * @param string $phName    Name of the Phabric entity
+     * @param array  $data      Data from the Gherkin
+     * 
+     * @return array
+     */
+    protected function selectPreloadedData($tableName, $phName, $data)
+    {
+        $builder = $this->connection->createQueryBuilder();
+
+        $nValue = $this->connection->quote($data[$phName]);
+
+        $builder->select('*')
+                ->from($tableName, 'a')
+                ->where("a.`$phName` = $nValue");
+        $sql = $builder->getSQL();
+        $result = $builder->execute();
+
+        $initalData = $result->fetchAll(\PDO::FETCH_ASSOC);
+
+        if(count($initalData) > 1) 
+        {
+            throw new \RuntimeException('
+                More than one row returned when trying to manage unmanaged 
+                (preloaded) data. Value in the name column (set in config) must be unique.');
+        }
+        
+        return reset($initalData);
+    }
     
     /**
      * Adds an entry into the array used to track data Phabric has inserted.
@@ -281,6 +319,11 @@ class Doctrine implements IDatasource
     {
         
     }
+    
+    public function select() 
+    {
+        
+    }
 
     /**
      * Resets the database state to the point of initial insert or update query.
@@ -302,19 +345,14 @@ class Doctrine implements IDatasource
             }
             if(isset($entity['update']))
             {
-                
+                foreach($entity['update'] as $id => $record) 
+                {
+                    $tableName = $this->tableMappings[$tableName]['tableName'];
+                    $pKeyCol = $this->tableMappings[$tableName]['primaryKey'];
+                    $this->connection->update($tableName, $record, array($pKeyCol => $id));   
+                }
             }
         }
-    }
-
-    /**
-     * Selects table from the database.
-     * 
-     * @return void
-     */
-    public function select() 
-    {
-        
     }
    
 }
