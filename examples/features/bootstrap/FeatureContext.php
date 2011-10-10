@@ -144,6 +144,7 @@ class FeatureContext extends BehatContext {
      * @Then /^I should see the following records$/
      */
     public function iShouldSeeTheFollowingRecords(TableNode $table) {
+        
         // Get the col names
         $topRow = reset($this->qResult);
 
@@ -239,5 +240,31 @@ class FeatureContext extends BehatContext {
            throw new Exception("The $table table should be empty. It contains " . $result['records'] . ' records');
        }
     }
+    
+    /**
+     * @Given /^data was loaded independantley of Phabric$/
+     */
+    public function dataWasLoadedIndependantleyOfPhabric()
+    {
+        $data = array(
+            'name' => 'PBC11',
+            'datetime'=> '2011-10-28 09:00:00',
+            'venue' => 'Barcellona',
+            'description' => 'HOT conf'
+        );
+        
+        $db = self::$db->insert('event', $data);
+        
+    }
+    
+    
+    /**
+     * @When /^I use phabric to update data not managed by phabric$/
+     */
+    public function iUsePhabricToUpdateDataNotManagedByPhabric(TableNode $table)
+    {
+        $this->phabric->updateFromTable('event', $table);
+    }
+
 
 }
