@@ -305,14 +305,14 @@ class Doctrine implements IDatasource
      */
     public function reset()
     {
-        foreach($this->resetMap as $tableName => $entity)
+        foreach($this->resetMap as $entityName => $entity)
         {
             if(isset($entity['insert']))
             {
                 foreach($entity['insert'] as $record)
                 {
-                    $tableName = $this->tableMappings[$tableName]['tableName'];
-                    $pKeyCol = $this->tableMappings[$tableName]['primaryKey'];
+                    $tableName = $this->tableMappings[$entityName]['tableName'];
+                    $pKeyCol = $this->tableMappings[$entityName]['primaryKey'];
                     $this->connection->delete($tableName, array($pKeyCol => $record));
                 }
             }
