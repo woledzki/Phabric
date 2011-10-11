@@ -230,6 +230,14 @@ class Doctrine implements IDatasource
         if (!isset($this->nameIdMap[$tableName][$data[$phName]]))
         {
             $initData = $this->selectPreloadedData($tableName, $phName, $data);
+
+            // @todo decide if we want to insert or throw exception and let end
+            // user to deal with that.
+            if (empty($initData))
+            {
+                return $this->insert($entity, $data);
+            }
+
             $this->resetMap[$tableName]['update'][$initData[$idCol]] = $initData;
             $whereAr = array($idCol => $initData[$idCol]);
         }
@@ -245,17 +253,16 @@ class Doctrine implements IDatasource
      * Selects data from the database not managed by Phabric.
      * Used to select a copy of the data before update in order to allow
      * roll back.
-     * 
+     *
      * @param string $tableName Name of table to query
      * @param string $phName    Name of the Phabric entity
      * @param array  $data      Data from the Gherkin
-     * 
+     *
      * @return array
      */
     protected function selectPreloadedData($tableName, $phName, $data)
     {
         $builder = $this->connection->createQueryBuilder();
-
         $nValue = $this->connection->quote($data[$phName]);
 
         $builder->select('*')
@@ -269,7 +276,7 @@ class Doctrine implements IDatasource
         if (count($initalData) > 1)
         {
             throw new \RuntimeException('
-                More than one row returned when trying to manage unmanaged 
+                More than one row returned when trying to manage unmanaged
                 (preloaded) data. Value in the name column (set in config) must be unique.');
         }
 
@@ -333,12 +340,12 @@ class Doctrine implements IDatasource
      */
     public function delete($entityName)
     {
-        
+
     }
 
     public function select()
     {
-        
+
     }
 
     /**
@@ -350,22 +357,20 @@ class Doctrine implements IDatasource
     {
         foreach ($this->resetMap as $entityName => $entity)
         {
+            $tableName = $this->tableMappings[$entityName]['tableName'];
+            $pKeyCol = $this->tableMappings[$entityName]['primaryKey'];
+
             if (isset($entity['insert']))
             {
                 foreach ($entity['insert'] as $record)
                 {
-                    $tableName = $this->tableMappings[$entityName]['tableName'];
-                    $pKeyCol = $this->tableMappings[$entityName]['primaryKey'];
                     $this->connection->delete($tableName, array($pKeyCol => $record));
                 }
             }
             if (isset($entity['update']))
             {
-
                 foreach ($entity['update'] as $id => $record)
                 {
-                    $tableName = $this->tableMappings[$tableName]['tableName'];
-                    $pKeyCol = $this->tableMappings[$tableName]['primaryKey'];
                     $this->connection->update($tableName, $record, array($pKeyCol => $id));
                 }
             }

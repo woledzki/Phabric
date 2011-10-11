@@ -132,7 +132,7 @@ class Entity
             {
                 $this->setDefaultNameTransformation($config['defaultNameTransformation']);
             }
-            
+
         }
     }
 
@@ -227,7 +227,7 @@ class Entity
 
         return $this->options[$option];
     }
-   
+
     /**
      * Set the default values for this entity.
      * These are used to 'fill in the gaps' left by the gherkin tables.
@@ -333,7 +333,7 @@ class Entity
     {
         $procData = $this->processTable($table);
 
-        foreach($procData as $row)
+        foreach ($procData as $row)
         {
             $this->ds->update($this, $row);
 
@@ -387,7 +387,7 @@ class Entity
         {
             return $this->nameTransformations[$key];
         }
-        else if(null !== $this->defaultNameTransformation) 
+        else if(null !== $this->defaultNameTransformation)
         {
 
             if(is_callable($this->defaultNameTransformation))
@@ -399,7 +399,7 @@ class Entity
             $fn = $this->bus->getDataTransformation($this->defaultNameTransformation);
             return call_user_func($fn, $key, $this->bus);
         }
-            
+
         return $key;
     }
 
