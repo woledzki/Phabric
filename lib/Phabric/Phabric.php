@@ -21,19 +21,15 @@ use Behat\Gherkin\Node\TableNode;
  */
 class Phabric
 {
-    /**
-     * An array of registered lambda functions.
-     *
-     * @var array
-     */
-    protected $registeredDataTransformations = array();
+    const REG_ENTITIES = 'phabric-entities';
+    const REG_DATA_TRANSFORMATIONS = 'phabric-data-transformations';
 
     /**
-     * An array of registered phabric instances.
+     * Registry object.
      *
-     * @var array
+     * @var Phabric\Registry
      */
-    protected $registeredPhabricEntities = array();
+    protected $registry = null;
 
     /**
      * Datasource used to insert / update records into.
@@ -52,6 +48,7 @@ class Phabric
     public function __construct(IDatasource $ds)
     {
         $this->datasource = $ds;
+        $this->registry = new Registry();
     }
 
     /**
@@ -101,12 +98,13 @@ class Phabric
      */
     public function addDataTransformation($name, $transformation)
     {
-        if(!\is_callable($transformation))
+        if (!\is_callable($transformation))
         {
-            throw new \InvalidArgumentException('Translation passed to ' . __METHOD__ . ' is not callable');
+            throw new \InvalidArgumentException("Transformation [$name] passed to " .
+                    __METHOD__ . ' is not callable');
         }
 
-        $this->registeredDataTransformations[$name] = $transformation;
+        $this->registry->add(static::REG_DATA_TRANSFORMATIONS, $name, $transformation);
     }
 
     /**
@@ -118,12 +116,15 @@ class Phabric
      */
     public function getDataTransformation($name)
     {
-        if(!isset($this->registeredDataTransformations[$name]))
+        $transformation = $this->registry->get(static::REG_DATA_TRANSFORMATIONS, $name);
+
+        if (null === $transformation)
         {
-            throw new \InvalidArgumentException('Data translation function not registered');
+            throw new \InvalidArgumentException("Data transformation function [$name] " .
+                    'is not registered');
         }
 
-        return $this->registeredDataTransformations[$name];
+        return $transformation;
     }
 
     /**
@@ -137,7 +138,7 @@ class Phabric
      */
     public function addEntity($name, Entity $phabric)
     {
-        $this->registeredPhabricEntities[$name] = $phabric;
+        $this->registry->add(static::REG_ENTITIES, $name, $phabric);
     }
 
     /**
@@ -151,14 +152,14 @@ class Phabric
      */
     public function getEntity($name)
     {
-        if(isset($this->registeredPhabricEntities[$name]))
-        {
-            return $this->registeredPhabricEntities[$name];
-        }
-        else
+        $entity = $this->registry->get(static::REG_ENTITIES, $name);
+
+        if (null === $entity)
         {
             throw new \InvalidArgumentException('Entity not registered');
         }
+
+        return $entity;
     }
 
     /**
