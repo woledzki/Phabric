@@ -34,10 +34,10 @@ class Phabric
      * @var array
      */
     protected $registeredPhabricEntities = array();
-    
+
     /**
      * Datasource used to insert / update records into.
-     * 
+     *
      * @var \Doctrine\Connection
      */
     protected $datasource;
@@ -46,46 +46,46 @@ class Phabric
      * Initialises an instance of the Phabric class.
      *
      * @param $ds The Datasource
-     * 
+     *
      * @return void
      */
     public function __construct(IDatasource $ds)
     {
         $this->datasource = $ds;
     }
-    
+
     /**
      * Creates and registers a Phabric entity.
-     * 
+     *
      * @param string $name   Name to register the entity with.
      * @param array  $config Configuration array.
-     * 
+     *
      * @return \Phabric\Entity
      */
     public function createEntity($name, $config = null)
     {
         $entity = new Entity($this->datasource, $this, $config);
-        
+
         $this->addEntity($name, $entity);
-        
+
         return $entity;
     }
-    
+
     /**
      * Creates multiple entities from config array.
      * The keys of the array are used as the names of the entities.
-     * 
-     * @param array $config 
-     * 
+     *
+     * @param array $config
+     *
      * @return void
      */
     public function createEntitiesFromConfig(array $config)
     {
         foreach($config as $name => $enConf)
         {
-            
+
             $enConf = array_merge($enConf, array('entityName' => $name));
-            
+
             $this->createEntity($name, $enConf);
         }
     }
@@ -129,8 +129,8 @@ class Phabric
     /**
      * Registers an entity by name for retrieval later by other phabric
      * instances.
-     * 
-     * @param string Entity name 
+     *
+     * @param string Entity name
      * @param Entity $phabric
      *
      * @return void
@@ -143,7 +143,7 @@ class Phabric
     /**
      * Get a named Phabric entity from the registered entities.
      *
-     * @param string $name 
+     * @param string $name
      *
      * @throws \InvalidArgumentException
      *
@@ -160,21 +160,21 @@ class Phabric
             throw new \InvalidArgumentException('Entity not registered');
         }
     }
-    
+
     /**
-     * A convience method taking the name of a previously created entity and 
-     * a TableNode. Data is inserted into the data source as if calling 
+     * A convience method taking the name of a previously created entity and
+     * a TableNode. Data is inserted into the data source as if calling
      * 'createFromTable' on the named entity directly.
-     * 
+     *
      * @param string    $entityName Name of a previously created entity.
-     * @param TableNode $table 
+     * @param TableNode $table
      * @param boolean   $default    Determines if default data values should be applied.
-     * 
+     *
      */
     public function insertFromTable($entityName, TableNode $table, $default = null)
     {
         $entity = $this->getEntity($entityName);
-        
+
         if($entity instanceof Entity)
         {
             return $entity->insertFromTable($table, $default);
@@ -184,35 +184,42 @@ class Phabric
             throw new \RuntimeException('Specified entity name does not map to registered entity');
         }
     }
-    
+
     /**
-     * A convience method taking the name of a previously created entity and a 
+     * A convience method taking the name of a previously created entity and a
      * TableNode. Data is used to update previously inserted database records.
-     * 
+     *
      * @param Entity    $entityName
-     * @param TableNode $table 
-     * 
+     * @param TableNode $table
+     *
      * @throws \RuntimeException When a record previously not inserted is specified
-     * 
+     *
      * @return void
      */
     public function updateFromTable($entityName, TableNode $table)
     {
         $entity = $this->getEntity($entityName);
-        
-        $entity->updateFromTable($table);
+
+        try
+        {
+            $entity->updateFromTable($table);
+        }
+        catch (\Exception $e)
+        {
+            // @todo: proper check for a type of Exception
+            $entity->insertFromTable($table);
+        }
     }
-    
+
     /**
      * Resets all inserts and updates made by Phabric.
-     * 
+     *
      * @return void
      */
     public function reset()
     {
         $this->datasource->reset();
     }
-
 
 }
 

@@ -235,7 +235,8 @@ class Doctrine implements IDatasource
             // user to deal with that.
             if (empty($initData))
             {
-                return $this->insert($entity, $data);
+                //return $this->insert($entity, $data);
+                throw new \Exception("Entity $name for name $phName not found");
             }
 
             $this->resetMap[$tableName]['update'][$initData[$idCol]] = $initData;
