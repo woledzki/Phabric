@@ -1,0 +1,47 @@
+<project name="Hoborg CMS" default="help" basedir=".">
+
+	<property name="dir.base" location="." />
+	<property name="dir.doc" location="docs" />
+	<property name="dir.src.lib" location="lib" />
+	<property name="dir.tst.unit" location="tests/" />
+	<property name="dir.tst.bdd" location="features/" />
+	<property name="dir.logs" value="${dir.base}/logs" />
+
+	<target name="prepare" description="Prepares working directory">
+		<!-- Prepare logs folders -->
+		<mkdir dir="${dir.logs}" />
+		<mkdir dir="${dir.logs}/phpmd" />
+		<mkdir dir="${dir.logs}/phpcs" />
+		<mkdir dir="${dir.logs}/phpcpd" />
+		<mkdir dir="${dir.logs}/phpdepend" />
+		<mkdir dir="${dir.logs}/phpunit" />
+	</target>
+
+	<target name="phpunit"
+		description="Run PHP Unit tests suite."
+	>
+		<exec executable="phpunit">
+			<arg line="-c ${dir.tst.unit}/phpunit.xml" />
+			<arg line="--strict" />
+			<arg line="--log-junit ${dir.logs}/phpunit/junit.xml" />
+			<arg line="--testdox-html ${dir.doc}/agile-doc.html" />
+			<arg line="--coverage-clover ${dir.logs}/phpunit/coverage.xml" />
+			<arg value="${dir.tst.unit}" />
+		</exec>
+	</target>
+
+	<!-- Clean up -->
+	<target name="clean"
+		description="Clean up working directory"
+	>
+		<delete dir="${dir.logs}" />
+	</target>
+
+	<!-- Help Message -->
+	<target name="help" description="Prints this help">
+		<exec executable="ant">
+			<arg line="-p" />
+			<arg line="-f ${dir.base}/build-cs.xml" />
+		</exec>
+	</target>
+</project>

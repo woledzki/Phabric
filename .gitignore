@@ -24,6 +24,8 @@
 ######################
 *.log
 *.sqlite
+/logs
+
 
 # OS generated files #
 ######################
@@ -32,6 +34,11 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
+# Autoloaders and configs
+#
+/tests/autoloader.php
+
 nbproject
+.project
 TwitterSentimentEngineMk2/library/BayesPHP
 TwitterSentimentEngineMk2/library/TwitterSearch
