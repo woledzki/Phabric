@@ -22,14 +22,20 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
      * @var Phabric
      */
     protected $object;
+    
+    /**
+     * @var \Mockery\Mock
+     */
+    protected $mockDs;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $db = m::mock('\Phabric\Datasource\IDatasource');
-        $this->object = new Phabric($db);
+        $this->mockDs = m::mock('\Phabric\Datasource\IDatasource');
+        
+        $this->object = new Phabric($this->mockDs);
     }
 
     /**
@@ -160,6 +166,15 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
                    ->never();
 
         $this->object->updateFromTable('TEST', $tableNode);
+    }
+    
+    public function testReset() 
+    {
+        $this->mockDs->shouldReceive('reset')
+                     ->withNoArgs()
+                     ->andReturn(1);
+        
+        $this->object->reset();
     }
 
 }

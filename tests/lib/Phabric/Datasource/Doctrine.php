@@ -41,6 +41,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         $this->mockedConnection = m::mock('\Doctrine\DBAL\Connection');
         
         $this->object = new Doctrine($this->mockedConnection);
+        //parent::setUp();
     }
 
     /**
@@ -48,7 +49,9 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
      * This method is called after a test is executed.
      */
     protected function tearDown() {
+        
         m::close();
+        parent::tearDown();
     }
     
     public function testConstructorInitMappings()
@@ -330,7 +333,60 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
     {
         
     }
+   
+    public function testResetInserts()
+    {
+        $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->withNoArgs()
+                ->andReturn('event');
+        
+        $values = array(
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+                    
+        $this->mockedConnection
+              ->shouldReceive('insert')
+              ->with('t_event', $values);
+             
+        $this->mockedConnection
+                ->shouldReceive('lastInsertId')
+                ->withNoArgs()
+                ->andReturn(12);
+        
+        $this->mockedConnection
+                ->shouldReceive('delete')
+                ->with('t_event', 12)
+                ->andReturn(null);
+
+                      
+        // Set the table mapping
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        $this->object->insert($mEntity, $values);
+        
+        $this->object->reset();
+        
+    }
+    
+    public function testResetUpdates()
+    {
+        
+    }
+    
+    public function testResetAnUpdatedUpdate()
+    {
+        
+    }
+    
+    public function testResetCombinedInsertsAndUpdates()
+    {
+        
+    }
+
+
 
 }
 
-?>

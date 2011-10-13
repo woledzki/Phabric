@@ -132,7 +132,7 @@ class Entity
             {
                 $this->setDefaultNameTransformation($config['defaultNameTransformation']);
             }
-            
+
         }
     }
 
@@ -142,7 +142,7 @@ class Entity
      * @param Bus $bus
      *
      * @return void.
-     * 
+     *
      */
     public function setBus(Phabric $bus)
     {
@@ -151,7 +151,7 @@ class Entity
 
     /**
      * Set the human readable name of the entity
-     * 
+     *
      * @param string $name
      *
      * @return void
@@ -160,16 +160,17 @@ class Entity
     {
         $this->entityName = $name;
     }
-    
+
     /**
      * Get the human readable name of the entity.
-     * 
+     *
      * @return string
      */
     public function getName()
     {
         return $this->entityName;
     }
+
 
     /**
      * Set some of the entities options
@@ -226,7 +227,7 @@ class Entity
 
         return $this->options[$option];
     }
-   
+
     /**
      * Set the default values for this entity.
      * These are used to 'fill in the gaps' left by the gherkin tables.
@@ -250,7 +251,7 @@ class Entity
     {
         $this->nameTransformations = $transformations;
     }
-        
+
 
     /**
      * Sets the transformations used to transform values in the gherkin text.
@@ -261,9 +262,16 @@ class Entity
      */
     public function setDataTransformations($transformations)
     {
-        foreach($transformations as $colName => $transformationName)
+        foreach($transformations as $colName => $transformation)
         {
-            $this->dataTransformations[$colName] = $transformationName;
+            if (is_array($transformation))
+            {
+                $this->dataTransformations[$colName] = $transformation;
+            }
+            else
+            {
+                $this->dataTransformations[$colName][] = $transformation;
+            }
         }
     }
 
@@ -299,23 +307,21 @@ class Entity
      */
     public function insertFromTable(TableNode $table, $defaultFlag = true)
     {
-           
         $data = $this->processTable($table);
 
         foreach($data as &$row)
         {
-            
             if($defaultFlag)
             {
                 $this->mergeDefaults($row);
             }
-            
+
             $this->ds->insert($this, $row);
 
+            // execute callbacks / fire afterInsert event
         }
-        
     }
-    
+
     /**
      * Update a previously inserted entity with the new data from a gherkin table.
      *
@@ -325,54 +331,55 @@ class Entity
      */
     public function updateFromTable(TableNode $table)
     {
-        
         $procData = $this->processTable($table);
-        
-        foreach($procData as $row)
-        { 
+
+        foreach ($procData as $row)
+        {
             $this->ds->update($this, $row);
+
+            // execute callbacks / fire afterUpdate event
         }
 
     }
-    
+
     /**
-     * Processes a table node. COnverts it into an array and applies any 
+     * Processes a table node. COnverts it into an array and applies any
      * transformations configured.
-     * 
+     *
      * @param TableNode $table
-     * 
-     * @return array 
+     *
+     * @return array
      */
     protected function processTable(TableNode $table)
     {
-        
+
         $rows = array();
-        
+
         foreach($table->getHash() as $row)
         {
             $cols = array();
-            
+
             foreach($row as $colName => $colValue)
             {
                 $k = $this->applyNameTransformation($colName);
-                
+
                 $cols[$k] = $this->applyDataTranslation($k, $colValue);
             }
-            
+
             $rows[] = $cols;
-                
+
         }
-        
+
         return $rows;
     }
-    
+
     /**
      * Looks for a name translation for the given key and if found applies it.
      * Returns the original key if no transformation is found.
-     * 
+     *
      * @param string $key
-     * 
-     * @return string 
+     *
+     * @return string
      */
     protected function applyNameTransformation($key)
     {
@@ -380,8 +387,9 @@ class Entity
         {
             return $this->nameTransformations[$key];
         }
-        else if(null !== $this->defaultNameTransformation) 
+        else if(null !== $this->defaultNameTransformation)
         {
+
             if(is_callable($this->defaultNameTransformation))
             {
                 $fn = $this->defaultNameTransformation;
@@ -391,30 +399,31 @@ class Entity
             $fn = $this->bus->getDataTransformation($this->defaultNameTransformation);
             return call_user_func($fn, $key, $this->bus);
         }
-            
+
         return $key;
     }
-    
+
     /**
-     * Looks for a data transformation for the given key and applies it to the 
+     * Looks for a data transformation for the given key and applies it to the
      * given value if found. Returns the original value if not found.
-     * 
+     *
      * @param string $key
      * @param string $value
-     * 
-     * @return string 
+     *
+     * @return string
      */
     protected function applyDataTranslation($key, $value)
     {
         if(isset($this->dataTransformations[$key]))
         {
-            $fn = $this->bus->getDataTransformation($this->dataTransformations[$key]);
-            return $fn($value, $this->bus);
+            foreach($this->dataTransformations[$key] as $transformationName)
+            {
+                $fn = $this->bus->getDataTransformation($transformationName);
+                $value = $fn($value, $this->bus);
+            }
         }
-        else
-        {
-            return $value;
-        }
+
+        return $value;
     }
 
     /**
@@ -422,7 +431,7 @@ class Entity
      * a Gherkin table.
      *
      * This method should be used after an name based transformations.
-     * 
+     *
      * @param array $row
      *
      * @return void
@@ -433,16 +442,20 @@ class Entity
         {
             return;
         }
-        
-        $defaultsReq = array_diff_key($this->defaults, $row);   
+
+        $defaultsReq = array_diff_key($this->defaults, $row);
         $row = array_merge($row, $defaultsReq);
     }
-    
+
     public function getNamedItemId($name)
     {
         return $this->ds->getNamedItemId($this, $name);
     }
-        
+
+    public function getNamedItem($name)
+    {
+        return $this->ds->getNamedItem($this, $name);
+    }
 
 }
 
