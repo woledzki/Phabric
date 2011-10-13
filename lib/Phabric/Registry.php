@@ -18,13 +18,22 @@ class Registry {
 		}
 	}
 
+	public function reset() {
+		$this->lookup = array();
+		$this->reverseLookup = array();
+	}
+
 	public function add($registryName, $key, $value) {
 		$this->addCollection($registryName, array($key => $value));
+
+		return $this;
 	}
 
 	public function addCollection($registryName, $collection) {
 		$this->lookup[$registryName] = $collection + $this->getLookup($registryName);
 		$this->appendReverseLookup($registryName, $collection);
+
+		return $this;
 	}
 
 	public function get($registryName, $key, $default = null) {

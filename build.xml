@@ -21,11 +21,12 @@
 		description="Run PHP Unit tests suite."
 	>
 		<exec executable="phpunit">
-			<arg line="-c ${dir.tst.unit}/phpunit.xml" />
+			<arg line="-c ${dir.base}/phpunit.xml.dist" />
 			<arg line="--strict" />
 			<arg line="--log-junit ${dir.logs}/phpunit/junit.xml" />
 			<arg line="--testdox-html ${dir.doc}/agile-doc.html" />
 			<arg line="--coverage-clover ${dir.logs}/phpunit/coverage.xml" />
+			<arg line="--coverage-html ${dir.logs}/phpunit/" />
 			<arg value="${dir.tst.unit}" />
 		</exec>
 	</target>
