@@ -15,11 +15,19 @@
 		<mkdir dir="${dir.logs}/phpcpd" />
 		<mkdir dir="${dir.logs}/phpdepend" />
 		<mkdir dir="${dir.logs}/phpunit" />
-		
+
 		<exec executable="git" dir="${dir.base}/lib/Vendor/Doctrine">
 			<arg line="submodule init" />
 		</exec>
 		<exec executable="git" dir="${dir.base}/lib/Vendor/Doctrine">
+			<arg line="submodule update" />
+		</exec>
+
+		<!-- Initialize Behat2 vendor -->
+		<exec executable="git" dir="${dir.base}/vendor/Behat2">
+			<arg line="submodule init" />
+		</exec>
+		<exec executable="git" dir="${dir.base}/vendor/Behat2">
 			<arg line="submodule update" />
 		</exec>
 	</target>

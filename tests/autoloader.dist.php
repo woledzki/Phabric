@@ -24,5 +24,8 @@ $docLoader->register();
 $docComLoader = new \Doctrine\Common\ClassLoader('Doctrine\Common', __DIR__ . '/../lib/Vendor/Doctrine/lib/vendor/doctrine-common/lib');
 $docComLoader->register();
 
-$behatLoader = new \Doctrine\Common\ClassLoader('Behat', '/Users/bwaine/pear/share/pear/gherkin/src');
+$gherkinLoader = new \Doctrine\Common\ClassLoader('Behat\Gherkin', __DIR__ . '/../vendor/Behat2/vendor/Gherkin/src');
+$gherkinLoader->register();
+
+$behatLoader = new \Doctrine\Common\ClassLoader('Behat', __DIR__ . '/../vendor/Behat2/src');
 $behatLoader->register();
