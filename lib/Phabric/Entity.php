@@ -120,7 +120,7 @@ class Entity
 
             if(isset($config['defaults']))
             {
-                $this->setDefaults($defaults);
+                $this->setDefaults($config['defaults']);
             }
 
             if(isset($config['options']))

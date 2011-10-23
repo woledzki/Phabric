@@ -172,7 +172,7 @@ class Phabric
      * @param boolean   $default    Determines if default data values should be applied.
      *
      */
-    public function insertFromTable($entityName, TableNode $table, $default = null)
+    public function insertFromTable($entityName, TableNode $table, $default = true)
     {
         $entity = $this->getEntity($entityName);
 
