@@ -107,7 +107,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
         $mockEntity = m::mock('\Phabric\Entity');
 
         $mockEntity->shouldReceive('insertFromTable')
-                ->with($tableNode, null)
+                ->with('TEST', $tableNode)
                 ->once();
 
         $this->object->addEntity('TEST', $mockEntity);
