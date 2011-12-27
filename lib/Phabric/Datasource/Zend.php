@@ -88,7 +88,15 @@ class Zend implements IDatasource
      */
     public function insert(Entity $entity, array $data)
     {
-
+        $name = $entity->getName();
+        $columns = implode('`,`', array_keys($data));
+        $values = implode("','", array_values($data));
+        
+        $this->connection->query(
+            "INSERT INTO (`$columns`) `$name` VALUES ('$values')"
+        );
+        
+        return $this->connection->lastInsertId();
     }
 
     /**
