@@ -49,13 +49,13 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
     public function testCreateEntity() {
         $entity = $this->object->createEntity('Event');
 
-        $this->assertType('\Phabric\Entity', $entity);
+        $this->assertInstanceOf('\Phabric\Entity', $entity);
     }
 
     public function testCreateEntityWithConfig() {
         $entity = $this->object->createEntity('Event', array('tableName' => 'event'));
 
-        $this->assertType('\Phabric\Entity', $entity);
+        $this->assertInstanceOf('\Phabric\Entity', $entity);
     }
 
     public function testCreateEntityHasRegisteredEntity() {
@@ -63,7 +63,7 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $entity = $this->object->getEntity('Event');
 
-        $this->assertType('\Phabric\Entity', $entity);
+        $this->assertInstanceOf('\Phabric\Entity', $entity);
     }
 
     public function testAddDataTransformation() {
@@ -132,9 +132,9 @@ class PhabricTest extends \PHPUnit_Framework_TestCase {
 
         $this->object->createEntitiesFromConfig($config);
 
-        $this->assertType('Phabric\Entity', $this->object->getEntity('event'));
-        $this->assertType('Phabric\Entity', $this->object->getEntity('vote'));
-        $this->assertType('Phabric\Entity', $this->object->getEntity('session'));
+        $this->assertInstanceOf('Phabric\Entity', $this->object->getEntity('event'));
+        $this->assertInstanceOf('Phabric\Entity', $this->object->getEntity('vote'));
+        $this->assertInstanceOf('Phabric\Entity', $this->object->getEntity('session'));
     }
 
     public function testUpdateFromTable() 
