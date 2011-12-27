@@ -56,6 +56,17 @@ class Zend implements IDatasource
     }
     
     /**
+     * Sets all table mappings.
+     *
+     * @param array $mappings
+     * @return void
+     */
+    public function setTableMappings(array $mappings)
+    {
+        $this->tableMappings = $mappings;
+    }
+    
+    /**
      * Add a mapping definition.
      *
      * @param string $entityName The name of the entity
