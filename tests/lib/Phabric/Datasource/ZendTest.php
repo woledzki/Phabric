@@ -47,6 +47,21 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($input, $obj->getMappings());
     }
     
+    public function testGetMappingAfterAdd()
+    {
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        $expected = array(
+            'event' => array(
+                'tableName' => 't_event',
+                'primaryKey' => 'id',
+                'nameCol' => 'name'
+            )
+        );
+        
+        $this->assertEquals($expected, $this->object->getMappings());
+    }
+    
     public function testInsert()
     {
         $mEntity = m::mock('\Phabric\Entity');
