@@ -133,8 +133,34 @@ class ZendTest extends \PHPUnit_Framework_TestCase
             'date' => '2011-10-08 12:00:00'
         );
         
+        // Set the table mapping
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
         $this->assertEquals(12, $this->object->insert($mEntity, $values));
     }
     
-    
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testInsertOnUnmappedTable()
+    {
+     $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->withNoArgs()
+                ->andReturn('event');
+        
+        $values = array(
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+             
+        $this->mockedConnection->shouldReceive('query');
+        $this->mockedConnection->shouldReceive('lastInsertId')
+             ->andReturn(12);
+        
+        // No mapping added
+        
+        $this->object->insert($mEntity, $values);   
+    }
 }

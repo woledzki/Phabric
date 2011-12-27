@@ -100,6 +100,12 @@ class Zend implements IDatasource
     public function insert(Entity $entity, array $data)
     {
         $name = $entity->getName();
+        
+        if (!isset($this->tableMappings[$name]))
+        {
+            throw new \RuntimeException("The table: $name has not been mapped.");
+        }
+        
         $columns = implode('`,`', array_keys($data));
         $values = implode("','", array_values($data));
         
