@@ -163,4 +163,27 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         
         $this->object->insert($mEntity, $values);   
     }
+    
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testInsertOnDataWithoutNameColumn()
+    {
+     $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->andReturn('event');
+        
+        $values = array(
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+             
+        $this->mockedConnection->shouldReceive('query');
+        $this->mockedConnection->shouldReceive('lastInsertId')
+             ->andReturn(12);
+        
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        $this->assertEquals(12, $this->object->insert($mEntity, $values));          
+    }
 }

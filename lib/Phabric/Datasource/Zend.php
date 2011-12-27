@@ -106,6 +106,14 @@ class Zend implements IDatasource
             throw new \RuntimeException("The table: $name has not been mapped.");
         }
         
+        $tableName = $this->tableMappings[$name]['tableName'];
+        $phName = $this->tableMappings[$name]['nameCol'];
+
+        if (!is_null($phName) && !isset($data[$phName]))
+        {
+            throw new \RuntimeException("Table data does not have required name column [$phName]");
+        }
+        
         $columns = implode('`,`', array_keys($data));
         $values = implode("','", array_values($data));
         
