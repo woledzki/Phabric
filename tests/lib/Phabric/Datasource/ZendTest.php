@@ -121,7 +121,7 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         $mEntity = m::mock('\Phabric\Entity');
         
         $mEntity->shouldReceive('getName')
-                ->andReturn('conferences');
+                ->andReturn('event');
         
         $this->mockedConnection->shouldReceive('query');
         $this->mockedConnection->shouldReceive('lastInsertId')
@@ -135,4 +135,6 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals(12, $this->object->insert($mEntity, $values));
     }
+    
+    
 }
