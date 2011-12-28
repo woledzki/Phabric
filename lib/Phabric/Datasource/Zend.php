@@ -99,23 +99,21 @@ class Zend implements IDatasource
     {
         $name = $entity->getName();
         
-        if (!isset($this->tableMappings[$name])) {
+        if (!$this->verifyTableIsMapped($name)) {
             throw new \RuntimeException("The table: $name has not been mapped.");
+        }
+
+        if (!$this->verifyDataContainsNameCol($name, $data)) {
+            throw new \RuntimeException('Table data does not have required name column');
         }
         
         $tableName = $this->tableMappings[$name]['tableName'];
         $phName = $this->tableMappings[$name]['nameCol'];
-
-        if (!is_null($phName) && !isset($data[$phName])) {
-            throw new \RuntimeException("Table data does not have required name column [$phName]");
-        }
         
         $columns = implode('`,`', array_keys($data));
         $values = implode("','", array_values($data));
         
-        $this->connection->query(
-            "INSERT INTO (`$columns`) `$name` VALUES ('$values')"
-        );
+        $this->connection->insert($tableName, $data);
         
         return $this->connection->lastInsertId();
     }

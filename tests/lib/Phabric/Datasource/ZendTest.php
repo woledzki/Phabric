@@ -120,19 +120,20 @@ class ZendTest extends \PHPUnit_Framework_TestCase
     {
         $mEntity = m::mock('\Phabric\Entity');
         
-        $mEntity->shouldReceive('getName')
-                ->andReturn('event');
-        
-        $this->mockedConnection->shouldReceive('query');
-        $this->mockedConnection->shouldReceive('lastInsertId')
-             ->andReturn(12);
-        
         $values = array(
             'name' => 'PHPNW',
             'desc' => 'A Great Conf!',
             'date' => '2011-10-08 12:00:00'
         );
         
+        $mEntity->shouldReceive('getName')
+                ->andReturn('event');
+        
+        $this->mockedConnection->shouldReceive('insert')
+             ->with('t_event', $values);
+        $this->mockedConnection->shouldReceive('lastInsertId')
+             ->andReturn(12);
+
         // Set the table mapping
         $this->object->addTableMapping('event', 't_event', 'id', 'name');
         
@@ -155,7 +156,8 @@ class ZendTest extends \PHPUnit_Framework_TestCase
                         'desc' => 'A Great Conf!',
                         'date' => '2011-10-08 12:00:00');
              
-        $this->mockedConnection->shouldReceive('query');
+        $this->mockedConnection->shouldReceive('insert')
+             ->with('t_event', $values);
         $this->mockedConnection->shouldReceive('lastInsertId')
              ->andReturn(12);
         
@@ -178,7 +180,8 @@ class ZendTest extends \PHPUnit_Framework_TestCase
                         'desc' => 'A Great Conf!',
                         'date' => '2011-10-08 12:00:00');
              
-        $this->mockedConnection->shouldReceive('query');
+        $this->mockedConnection->shouldReceive('insert')
+             ->with('t_event', $values);
         $this->mockedConnection->shouldReceive('lastInsertId')
              ->andReturn(12);
         
