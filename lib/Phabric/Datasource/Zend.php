@@ -24,6 +24,35 @@ use \Zend_Db_Adapter_Abstract as Conn;
 class Zend implements IDatasource
 {
     /**
+     * Database connection
+     *
+     * @var \Zend_Db_Adapter_Abstract
+     */
+    protected $connection;
+    
+    /**
+     * Table Mapping data used in insert / update operations.
+     *
+     * @var array
+     */
+    protected $tableMappings;
+    
+    /**
+     * A map of names => id mappings keyed by table
+     *
+     * @var array
+     */
+    protected $nameIdMap;
+    
+    /**
+     * Map of inserts and updates with respective ID's
+     * indexed by tablename => array('insert','update)'
+     *
+     * @var array
+     */
+    protected $resetMap = array();
+    
+    /**
      * Initialises an instance of the Zend datasource class.
      *
      * @param \Zend_Db_Adapter_Abstract $connection
@@ -37,7 +66,12 @@ class Zend implements IDatasource
 
         if (isset($config)) {
             foreach ($config as $name => $entity) {
-                $this->addTableMapping($name, $entity['tableName'], $entity['primaryKey'], $entity['nameCol']);
+                $this->addTableMapping(
+                    $name,
+                    $entity['tableName'],
+                    $entity['primaryKey'],
+                    $entity['nameCol']
+                );
             }
         }
     }
@@ -75,7 +109,8 @@ class Zend implements IDatasource
      *
      * @return void
      */
-    public function addTableMapping($entityName, $tableName, $pKeyCol, $nameCol)
+    public function addTableMapping($entityName, $tableName, $pKeyCol,
+        $nameCol)
     {
         $this->tableMappings[$entityName] = array(
             'tableName' => $tableName,
@@ -89,7 +124,27 @@ class Zend implements IDatasource
      */
     public function reset()
     {
-        
+        foreach ($this->resetMap as $entityName => $entity) {
+            $tableName = $this->tableMappings[$entityName]['tableName'];
+            $pKeyCol = $this->tableMappings[$entityName]['primaryKey'];
+
+            if (isset($entity['insert'])) {
+                foreach ($entity['insert'] as $record) {
+                    $this->connection->delete(
+                        $tableName, "$pKeyCol = $record"
+                    );
+                }
+            }
+            
+            if (isset($entity['update'])) {
+                foreach ($entity['update'] as $id => $record) {
+                    $this->connection->update(
+                        $tableName,
+                        $record, "$pKeyCol = $id"
+                    );
+                }
+            }
+        }
     }
 
     /**
@@ -100,11 +155,15 @@ class Zend implements IDatasource
         $name = $entity->getName();
         
         if (!$this->verifyTableIsMapped($name)) {
-            throw new \RuntimeException("The table: $name has not been mapped.");
+            throw new \RuntimeException(
+                "The table: $name has not been mapped."
+            );
         }
 
         if (!$this->verifyDataContainsNameCol($name, $data)) {
-            throw new \RuntimeException('Table data does not have required name column');
+            throw new \RuntimeException(
+                'Table data does not have required name column'
+            );
         }
         
         $tableName = $this->tableMappings[$name]['tableName'];
@@ -126,11 +185,15 @@ class Zend implements IDatasource
         $name = $entity->getName();
         
         if (!$this->verifyTableIsMapped($name)) {
-            throw new \RuntimeException("The table: $name has not been mapped.");
+            throw new \RuntimeException(
+                "The table: $name has not been mapped."
+            );
         }
 
         if (!$this->verifyDataContainsNameCol($name, $data)) {
-            throw new \RuntimeException('Table data does not have required name column');
+            throw new \RuntimeException(
+                'Table data does not have required name column'
+            );
         }
         
         $tableName = $this->tableMappings[$name]['tableName'];
@@ -138,19 +201,23 @@ class Zend implements IDatasource
         $idCol = $this->tableMappings[$name]['primaryKey'];
 
         if (!isset($this->nameIdMap[$tableName][$data[$phName]])) {
-            $initData = $this->selectPreloadedData($tableName, $phName, $data);
+            $initData = $this->selectPreloadedData(
+                $tableName, $phName, $data
+            );
 
-            // @todo decide if we want to insert or throw exception and let end
-            // user to deal with that.
+            // @todo decide if we want to insert or throw exception and let
+            // end user to deal with that.
             if (empty($initData)) {
                 //return $this->insert($entity, $data);
-                throw new \Exception("Entity $name for name $phName not found");
+                throw new \Exception(
+                    "Entity $name for name $phName not found"
+                );
             }
 
             $this->resetMap[$tableName]['update'][$initData[$idCol]] = $initData;
-            $whereAr = array($idCol => $initData[$idCol]);
+            $whereAr = "$idCol = {$initData[$idCol]}";
         } else {
-            $whereAr = array($idCol => $this->nameIdMap[$tableName][$data[$phName]]);
+            $whereAr = "$idCol = {$this->nameIdMap[$tableName][$data[$phName]]}";
         }
         
         return $this->connection->update($tableName, $data, $whereAr);
@@ -159,7 +226,7 @@ class Zend implements IDatasource
     /**
      * Delete data from the datasource.
      */
-    public function delete($enityName)
+    public function delete($entityName)
     {
         
     }

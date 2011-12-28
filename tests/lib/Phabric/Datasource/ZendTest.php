@@ -225,12 +225,49 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         
         $this->mockedConnection
               ->shouldReceive('update')
-              ->with('t_event', $values, array('id' => 12))
+              ->with('t_event', $values, "id = 12")
               ;        
         
         // Set the table mapping
         $this->object->addTableMapping('event', 't_event', 'id', 'name');
         
         $this->object->update($mEntity, $values);
+    }
+    
+    public function testResetInserts()
+    {
+        $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->withNoArgs()
+                ->andReturn('event');
+        
+        $values = array(
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+                    
+        $this->mockedConnection
+              ->shouldReceive('insert')
+              ->with('t_event', $values);
+             
+        $this->mockedConnection
+                ->shouldReceive('lastInsertId')
+                ->withNoArgs()
+                ->andReturn(12);
+        
+        $this->mockedConnection
+                ->shouldReceive('delete')
+                ->with('t_event', "id = 12")
+                ->andReturn(null);
+
+                      
+        // Set the table mapping
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        $this->object->insert($mEntity, $values);
+        
+        $this->object->reset();
+        
     }
 }
