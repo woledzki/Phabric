@@ -35,10 +35,8 @@ class Zend implements IDatasource
     {
         $this->connection = $connection;
 
-        if (isset($config))
-        {
-            foreach ($config as $name => $entity)
-            {
+        if (isset($config)) {
+            foreach ($config as $name => $entity) {
                 $this->addTableMapping($name, $entity['tableName'], $entity['primaryKey'], $entity['nameCol']);
             }
         }
@@ -101,16 +99,14 @@ class Zend implements IDatasource
     {
         $name = $entity->getName();
         
-        if (!isset($this->tableMappings[$name]))
-        {
+        if (!isset($this->tableMappings[$name])) {
             throw new \RuntimeException("The table: $name has not been mapped.");
         }
         
         $tableName = $this->tableMappings[$name]['tableName'];
         $phName = $this->tableMappings[$name]['nameCol'];
 
-        if (!is_null($phName) && !isset($data[$phName]))
-        {
+        if (!is_null($phName) && !isset($data[$phName])) {
             throw new \RuntimeException("Table data does not have required name column [$phName]");
         }
         
@@ -129,7 +125,37 @@ class Zend implements IDatasource
      */
     public function update(Entity $entity, array $data)
     {
+        $name = $entity->getName();
         
+        if (!$this->verifyTableIsMapped($name)) {
+            throw new \RuntimeException("The table: $name has not been mapped.");
+        }
+
+        if (!$this->verifyDataContainsNameCol($name, $data)) {
+            throw new \RuntimeException('Table data does not have required name column');
+        }
+        
+        $tableName = $this->tableMappings[$name]['tableName'];
+        $phName = $this->tableMappings[$name]['nameCol'];
+        $idCol = $this->tableMappings[$name]['primaryKey'];
+
+        if (!isset($this->nameIdMap[$tableName][$data[$phName]])) {
+            $initData = $this->selectPreloadedData($tableName, $phName, $data);
+
+            // @todo decide if we want to insert or throw exception and let end
+            // user to deal with that.
+            if (empty($initData)) {
+                //return $this->insert($entity, $data);
+                throw new \Exception("Entity $name for name $phName not found");
+            }
+
+            $this->resetMap[$tableName]['update'][$initData[$idCol]] = $initData;
+            $whereAr = array($idCol => $initData[$idCol]);
+        } else {
+            $whereAr = array($idCol => $this->nameIdMap[$tableName][$data[$phName]]);
+        }
+        
+        return $this->connection->update($tableName, $data, $whereAr);
     }
 
     /**
@@ -154,5 +180,68 @@ class Zend implements IDatasource
     public function getNamedItemId(Entity $entity, $name)
     {
         
+    }
+    
+    /**
+     * Verify data has the required name col to identify it with.
+     * Used to record an insert or to get the id to use in an update.
+     *
+     * @param string $entityName
+     * @param array  $data
+     *
+     * @return boolean
+     */
+    protected function verifyDataContainsNameCol($entityName, $data)
+    {
+        if (isset($this->tableMappings[$entityName]['nameCol']))
+        {
+            return isset($data[$this->tableMappings[$entityName]['nameCol']]);
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifies that the required table meta data is present.
+     *
+     * @param string $entityName
+     *
+     * @return boolean
+     */
+    protected function verifyTableIsMapped($entityName)
+    {
+        return isset($this->tableMappings[$entityName]);
+    }
+    
+    /**
+     * Selects data from the database not managed by Phabric.
+     * Used to select a copy of the data before update in order to allow
+     * roll back.
+     *
+     * @param string $tableName Name of table to query
+     * @param string $phName    Name of the Phabric entity
+     * @param array  $data      Data from the Gherkin
+     *
+     * @return array
+     */
+    protected function selectPreloadedData($tableName, $phName, $data)
+    {
+        $builder = $this->connection->select();
+        $nValue = $this->connection->quote($data[$phName]);
+
+        $builder->from($tableName, 'a')
+                ->where("a.`$phName` = $nValue");
+        $result = $builder->query();
+
+        $initalData = $result->fetchAll();
+
+        if (count($initalData) > 1)
+        {
+            throw new \RuntimeException('
+                More than one row returned when trying to manage unmanaged
+                (preloaded) data. Value in the name column (set in config) must be unique.');
+        }
+
+        return reset($initalData);
     }
 }

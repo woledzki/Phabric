@@ -186,4 +186,48 @@ class ZendTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals(12, $this->object->insert($mEntity, $values));          
     }
+    
+    public function testUpdate()
+    {
+        $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->withNoArgs()
+                ->andReturn('event');
+        
+        $values = array(
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+        
+        $select = m::mock('\Zend_Db_Select');
+        $statement = m::mock('\Zend_Db_Statement');
+        $statement->shouldReceive('fetchAll')
+                  ->andReturn(array(array(
+                        'id'   => 12,
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00')));
+        
+        $select->shouldReceive('from')
+               ->andReturn($select);
+        $select->shouldReceive('where')
+               ->andReturn($select);
+        $select->shouldReceive('query')
+               ->andReturn($statement);
+        
+        $this->mockedConnection->shouldReceive('select')
+             ->andReturn($select);
+        $this->mockedConnection->shouldReceive('quote');
+        
+        $this->mockedConnection
+              ->shouldReceive('update')
+              ->with('t_event', $values, array('id' => 12))
+              ;        
+        
+        // Set the table mapping
+        $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        $this->object->update($mEntity, $values);
+    }
 }
