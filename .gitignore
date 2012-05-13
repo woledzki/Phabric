@@ -37,3 +37,8 @@ nbproject
 .project
 TwitterSentimentEngineMk2/library/BayesPHP
 TwitterSentimentEngineMk2/library/TwitterSearch
+
+# Vendor and composer files
+vendor/
+composer.lock
+composer.phar
