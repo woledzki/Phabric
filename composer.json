@@ -1,0 +1,25 @@
+{
+    "name": "benwaine/phabric",
+    "type": "library",
+    "description": "A DB mockup / fixture creation library for Behat",
+    "keywords": ["behat", "doctrine", "fixtures", "mockups"],
+    "homepage": "https://github.com/benwaine/Phabric",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ben Waine",
+            "homepage": "http://ben-waine.co.uk"
+        }
+    ],
+    "require": {
+        "php":           ">=5.3",
+        "doctrine/dbal": "2.*",
+        "behat/gherkin": "*"
+    },
+    "require-dev": {
+        "mockery/mockery": "*"
+    },
+    "autoload": {
+        "psr-0": { "Phabric\\": "lib/" }
+    }
+}
