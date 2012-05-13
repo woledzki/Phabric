@@ -1,6 +1,8 @@
 Phabric
 =======
 
+[![Build Status](https://secure.travis-ci.org/benwaine/Phabric.png?branch=master)](http://travis-ci.org/benwaine/Phabric)
+
 A tool that translates Gherkin Tables into database inserts / updates.
 
 It's for use with the BDD library Behat which can be found at: http://behat.org/
