@@ -1,9 +1,7 @@
 Phabric
 =======
 
-[![Build Status](https://secure.travis-ci.org/benwaine/Phabric.png?branch=master)](http://travis-ci.org/benwaine/Phabric)
-
-[![Build Status](http://ci01.hoborglabs.com/job/Phabric/badge/icon)](http://ci01.hoborglabs.com/job/Phabric/)
+[![Build Status](http://ci01.hoborglabs.com/jenkins/job/Phabric/badge/icon)](http://ci01.hoborglabs.com/jenkins/job/Phabric/)
 
 A tool that translates Gherkin Tables into database inserts / updates.
 
