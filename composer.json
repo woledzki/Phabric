@@ -13,8 +13,7 @@
     ],
     "require": {
         "php":           ">=5.3",
-        "doctrine/dbal": "2.*",
-        "behat/gherkin": "*"
+        "doctrine/dbal": "2.*"
     },
     "require-dev": {
         "mockery/mockery": "*"
