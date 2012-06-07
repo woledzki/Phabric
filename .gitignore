@@ -1,6 +1,8 @@
-# Builds
+## 
+# Automated Build
 build.properties
 /build
+/docs
 /logs
 
 
@@ -25,7 +27,6 @@ build.properties
 ######################
 *.log
 *.sqlite
-/logs
 
 
 # OS generated files #

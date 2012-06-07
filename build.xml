@@ -19,8 +19,6 @@
 	<property name="cmd.pdepend" value="pdepend" />
 	<property name="cmd.phar" value="phar" />
 	<property name="cmd.composer" value="${dir.base}/composer.phar" />
-	
-	<available file="${dir.base}/composer.phar" property="composer.present" />
 
 	<target name="test"
 		description="Run project tests"
@@ -48,9 +46,11 @@
 		<mkdir dir="${dir.logs}/phpcpd" />
 		<mkdir dir="${dir.logs}/phpdepend" />
 		<mkdir dir="${dir.logs}/phpunit" />
+
+		<available file="${dir.base}/composer.phar" property="composer.present" />
 	</target>
 
-	<target name="validate" depends="install-composer"
+	<target name="validate" depends="prepare, install-composer"
 		description="Validates project."
 	>
 		<!-- get dependencies -->
@@ -76,8 +76,13 @@
 			executable="${cmd.phpunit}"
 			failonerror="false"
 		>
-			<arg line="-c ${dir.tst}/phpunit.xml" />
-			<arg line="--log-junit ${dir.logs}/phpunit/phpunit.xml" />
+			<arg line="-c ${dir.base}/phpunit.xml.dist" />
+			<arg line="--strict" />
+			<arg line="--log-junit ${dir.logs}/phpunit/junit.xml" />
+			<arg line="--testdox-html ${dir.doc}/agile-doc.html" />
+			<arg line="--coverage-clover ${dir.logs}/phpunit/coverage.xml" />
+			<arg line="--coverage-html ${dir.logs}/phpunit/" />
+			<arg value="${dir.tst}" />
 		</exec>
 	</target>
 	
@@ -149,11 +154,11 @@
 		<delete file="${dir.base}/composer.lock" />
 		<delete file="${dir.base}/composer.phar" />
 	</target>
-	
+
 	<target name="clean-logs" description="Clean up log folder">
 		<delete dir="${dir.logs}" />
 	</target>
-	
+
 	<target name="clean-build" description="Clean up build folder">
 		<delete dir="${dir.build}" />
 	</target>
