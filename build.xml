@@ -1,63 +1,168 @@
-<project name="Hoborg CMS" default="help" basedir=".">
+<project name="Phabric" default="help" basedir=".">
+
+	<property file="build.properties" />
 
 	<property name="dir.base" location="." />
 	<property name="dir.doc" location="docs" />
-	<property name="dir.src.lib" location="lib" />
+	<property name="dir.src" location="lib" />
+	<property name="dir.tst" location="tests/" />
 	<property name="dir.tst.unit" location="tests/" />
 	<property name="dir.tst.bdd" location="features/" />
 	<property name="dir.logs" value="${dir.base}/logs" />
+	<property name="dir.build" value="${dir.base}/build/" />
 
-	<target name="prepare" description="Prepares working directory">
-		<!-- Prepare logs folders -->
+	<!-- Commands aliases -->
+	<property name="cmd.phpunit" value="phpunit" />
+	<property name="cmd.phpmd" value="phpmd" />
+	<property name="cmd.phpcpd" value="phpcpd" />
+	<property name="cmd.phpcs" value="phpcs" />
+	<property name="cmd.pdepend" value="pdepend" />
+	<property name="cmd.phar" value="phar" />
+	<property name="cmd.composer" value="${dir.base}/composer.phar" />
+	
+	<available file="${dir.base}/composer.phar" property="composer.present" />
+
+	<target name="test"
+		description="Run project tests"
+		depends="clean-logs, prepare, validate, phpunit, behat"
+	/>
+
+	<target name="code-analysis"
+		description="Run static code analysis tools"
+		depends="clean-logs, prepare, phpmd, phpcpd, phpcs, phpdepend"
+	/>
+
+	<target name="prepare"
+		description="Prepares directory structure for the build"
+	>
+		<!-- Make folders -->
+		<mkdir dir="${dir.base}/vendors" />
+
+		<mkdir dir="${dir.build}" />
+		<mkdir dir="${dir.build}/phar" />
+		<mkdir dir="${dir.build}/src" />
+
 		<mkdir dir="${dir.logs}" />
 		<mkdir dir="${dir.logs}/phpmd" />
 		<mkdir dir="${dir.logs}/phpcs" />
 		<mkdir dir="${dir.logs}/phpcpd" />
 		<mkdir dir="${dir.logs}/phpdepend" />
 		<mkdir dir="${dir.logs}/phpunit" />
+	</target>
 
-		<exec executable="git" dir="${dir.base}/lib/Vendor/Doctrine">
-			<arg line="submodule init" />
+	<target name="validate" depends="install-composer"
+		description="Validates project."
+	>
+		<!-- get dependencies -->
+		<exec executable="php" failonerror="true">
+			<arg line="${cmd.composer}" />
+			<arg line="update" />
+			<arg line="--dev" />
 		</exec>
-		<exec executable="git" dir="${dir.base}/lib/Vendor/Doctrine">
-			<arg line="submodule update" />
-		</exec>
+	</target>
 
-		<!-- Initialize Behat2 vendor -->
-		<exec executable="git" dir="${dir.base}/vendor/Behat2">
-			<arg line="submodule init" />
-		</exec>
-		<exec executable="git" dir="${dir.base}/vendor/Behat2">
-			<arg line="submodule update" />
+	<target name="install-composer" unless="composer.present">
+		<exec executable="bash">
+			<arg value="-c" />
+			<arg value="curl -s http://getcomposer.org/installer | php" />
 		</exec>
 	</target>
 
 	<target name="phpunit"
-		description="Run PHP Unit tests suite."
+		description="Runs PHPUnit tests"
+		depends="prepare"
 	>
-		<exec executable="phpunit">
-			<arg line="-c ${dir.base}/phpunit.xml.dist" />
-			<arg line="--strict" />
-			<arg line="--log-junit ${dir.logs}/phpunit/junit.xml" />
-			<arg line="--testdox-html ${dir.doc}/agile-doc.html" />
-			<arg line="--coverage-clover ${dir.logs}/phpunit/coverage.xml" />
-			<arg line="--coverage-html ${dir.logs}/phpunit/" />
-			<arg value="${dir.tst.unit}" />
+		<exec dir="${dir.base}" 
+			executable="${cmd.phpunit}"
+			failonerror="false"
+		>
+			<arg line="-c ${dir.tst}/phpunit.xml" />
+			<arg line="--log-junit ${dir.logs}/phpunit/phpunit.xml" />
+		</exec>
+	</target>
+	
+	<target name="behat" description="Runs full stack tests">
+		<echo>Not implemented yet</echo>
+		<!-- 
+		<exec executable="${dir.tst}/console">
+			<arg line="-e=test" />
+			<arg line="behat" />
+			<arg line="@CommonsBundle" />
+		</exec>
+		-->
+	</target>
+
+	<target name="phpmd"
+		description="Runs PHP Mess Detector"
+		depends="prepare"
+	>
+		<exec dir="${dir.base}"
+			executable="${cmd.phpmd}"
+			failonerror="false"
+		>
+			<arg line="${dir.src}/Hoborg" />
+			<arg line="xml" />
+			<arg line="codesize,unusedcode,naming" />
+			<arg line="--reportfile ${dir.logs}/phpmd/phpmd.xml" />
+		</exec>
+	</target>
+
+	<target name="phpcpd"
+		description="Runs PHP Copy and Paste detection"
+		depends="prepare"
+	>
+		<exec dir="${dir.base}" executable="${cmd.phpcpd}" failonerror="false">
+			<arg line="--log-pmd ${dir.logs}/phpcpd/phpcpd.xml" />
+			<arg value="${dir.src}/Hoborg" />
+		</exec>
+	</target>
+
+	<target name="phpcs"
+		description="Runs PHP Code Sniffer"
+		depends="prepare"
+	>
+		<exec dir="${dir.base}" executable="${cmd.phpcs}" failonerror="false">
+			<arg value="--standard=${dir.base}/misc/code_sniffer/Hoborg/" />
+			<arg value="--report=checkstyle" />
+			<arg value="--report-file=${dir.logs}/phpcs/cmns-sniffs.xml" />
+			<arg value="-p" />
+			<arg value="${dir.src}/Hoborg" />
+		</exec>
+	</target>
+
+	<target name="phpdepend"
+		description="Runs PHP Depend"
+		depends="prepare"
+	>
+		<exec dir="${dir.base}" executable="${cmd.pdepend}" failonerror="false">
+			<arg line="--jdepend-chart=${dir.logs}/phpdepend/jdepend.svg" />
+			<arg line="--jdepend-xml=${dir.logs}/phpdepend/jdepend.xml" />
+			<arg line="--overview-pyramid=${dir.logs}/phpdepend/pyramid.svg" />
+			<arg line="${dir.src}/Hoborg" />
 		</exec>
 	</target>
 
 	<!-- Clean up -->
-	<target name="clean"
-		description="Clean up working directory"
-	>
+	<target name="clean" description="Clean up workspace" depends="clean-logs, clean-build">
+		<!-- Composer -->
+		<delete dir="${dir.base}/vendors" />
+		<delete file="${dir.base}/composer.lock" />
+		<delete file="${dir.base}/composer.phar" />
+	</target>
+	
+	<target name="clean-logs" description="Clean up log folder">
 		<delete dir="${dir.logs}" />
+	</target>
+	
+	<target name="clean-build" description="Clean up build folder">
+		<delete dir="${dir.build}" />
 	</target>
 
 	<!-- Help Message -->
 	<target name="help" description="Prints this help">
 		<exec executable="ant">
-			<arg line="-p" />
-			<arg line="-f ${dir.base}/build-cs.xml" />
+			<arg value="-p" />
 		</exec>
 	</target>
 </project>
+

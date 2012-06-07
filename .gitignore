@@ -1,3 +1,9 @@
+# Builds
+build.properties
+/build
+/logs
+
+
 ##
 # PHPUnit xml files
 /phpunit*.xml
@@ -33,8 +39,13 @@ Thumbs.db
 #
 /tests/autoloader.php
 
+# IDEs
 nbproject
 .project
+.buildpath
+.settings/
+
+
 TwitterSentimentEngineMk2/library/BayesPHP
 TwitterSentimentEngineMk2/library/TwitterSearch
 

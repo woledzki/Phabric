@@ -13,11 +13,11 @@
     ],
     "require": {
         "php":           ">=5.3",
-        "doctrine/dbal": "2.*",
-        "behat/gherkin": "*"
+        "doctrine/dbal": ">=2.0@stable",
+        "behat/gherkin": ">=2@stable"
     },
     "require-dev": {
-        "mockery/mockery": "*"
+        "mockery/mockery": ">=0.7@stable"
     },
     "autoload": {
         "psr-0": { "Phabric\\": "lib/" }
