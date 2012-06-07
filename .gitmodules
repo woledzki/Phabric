@@ -1,9 +1,0 @@
-[submodule "lib/Vendor/mockery"]
-	path = lib/Vendor/mockery
-	url = https://github.com/padraic/mockery.git
-[submodule "lib/Vendor/Doctrine"]
-	path = lib/Vendor/Doctrine
-	url = https://github.com/doctrine/dbal.git
-[submodule "vendor/Behat2"]
-	path = vendor/Behat2
-	url = git://github.com/Behat/Behat.git
