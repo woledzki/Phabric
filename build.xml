@@ -22,12 +22,12 @@
 
 	<target name="test"
 		description="Run project tests"
-		depends="clean-logs, prepare, validate, phpunit, behat"
+		depends="prepare, validate, phpunit, behat"
 	/>
 
 	<target name="code-analysis"
 		description="Run static code analysis tools"
-		depends="clean-logs, prepare, phpmd, phpcpd, phpcs, phpdepend"
+		depends="prepare, phpmd, phpcpd, phpcs, phpdepend"
 	/>
 
 	<target name="prepare"
@@ -105,7 +105,7 @@
 			executable="${cmd.phpmd}"
 			failonerror="false"
 		>
-			<arg line="${dir.src}/Hoborg" />
+			<arg line="${dir.src}" />
 			<arg line="xml" />
 			<arg line="codesize,unusedcode,naming" />
 			<arg line="--reportfile ${dir.logs}/phpmd/phpmd.xml" />
@@ -118,7 +118,7 @@
 	>
 		<exec dir="${dir.base}" executable="${cmd.phpcpd}" failonerror="false">
 			<arg line="--log-pmd ${dir.logs}/phpcpd/phpcpd.xml" />
-			<arg value="${dir.src}/Hoborg" />
+			<arg value="${dir.src}" />
 		</exec>
 	</target>
 
@@ -126,13 +126,7 @@
 		description="Runs PHP Code Sniffer"
 		depends="prepare"
 	>
-		<exec dir="${dir.base}" executable="${cmd.phpcs}" failonerror="false">
-			<arg value="--standard=${dir.base}/misc/code_sniffer/Hoborg/" />
-			<arg value="--report=checkstyle" />
-			<arg value="--report-file=${dir.logs}/phpcs/cmns-sniffs.xml" />
-			<arg value="-p" />
-			<arg value="${dir.src}/Hoborg" />
-		</exec>
+		<echo>Not implemented yet</echo>
 	</target>
 
 	<target name="phpdepend"
@@ -143,12 +137,15 @@
 			<arg line="--jdepend-chart=${dir.logs}/phpdepend/jdepend.svg" />
 			<arg line="--jdepend-xml=${dir.logs}/phpdepend/jdepend.xml" />
 			<arg line="--overview-pyramid=${dir.logs}/phpdepend/pyramid.svg" />
-			<arg line="${dir.src}/Hoborg" />
+			<arg line="${dir.src}" />
 		</exec>
 	</target>
 
 	<!-- Clean up -->
-	<target name="clean" description="Clean up workspace" depends="clean-logs, clean-build">
+	<target name="clean" 
+		description="Clean up workspace" 
+		depends="clean-logs, clean-build"
+	>
 		<!-- Composer -->
 		<delete dir="${dir.base}/vendors" />
 		<delete file="${dir.base}/composer.lock" />
