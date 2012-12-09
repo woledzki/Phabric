@@ -121,9 +121,12 @@ class Doctrine implements IDatasource
             'primaryKey' => $pKeyCol,
             'nameCol' => $nameCol,
         );
-        if ($sequence) {
+
+        if ($sequence)
+        {
             $mapping['sequence'] = $sequence;
         }
+
         $this->tableMappings[$entityName] = $mapping;
     }
 
@@ -202,7 +205,8 @@ class Doctrine implements IDatasource
 
         $this->connection->insert($tableName, $data);
 
-        $sequence = isset($this->tableMappings[$name]['sequence']) ? $this->tableMappings[$name]['sequence'] : null;
+        $sequence = isset($this->tableMappings[$name]['sequence']) ?
+                $this->tableMappings[$name]['sequence'] : null;
         $insertId = $this->connection->lastInsertId($sequence);
 
         if (!is_null($phName))
