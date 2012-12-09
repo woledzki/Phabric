@@ -69,7 +69,13 @@ class Doctrine implements IDatasource
         {
             foreach ($config as $name => $entity)
             {
-                $this->addTableMapping($name, $entity['tableName'], $entity['primaryKey'], $entity['nameCol']);
+                $this->addTableMapping(
+                    $name,
+                    $entity['tableName'],
+                    $entity['primaryKey'],
+                    $entity['nameCol'],
+                    isset($entity['sequence']) ? $entity['sequence'] : null
+                );
             }
         }
     }
@@ -103,16 +109,22 @@ class Doctrine implements IDatasource
      * @param string $pKeyCol    The name of the tables primary key column
      * @param string $nameCol    The name of the column Phabric uses to ID the
      *                           data
+     * @param string $sequence   The optional sequence name associated with
+     *                           responsible for ID generation
      *
      * @return void
      */
-    public function addTableMapping($entityName, $tableName, $pKeyCol, $nameCol)
+    public function addTableMapping($entityName, $tableName, $pKeyCol, $nameCol, $sequence = null)
     {
-        $this->tableMappings[$entityName] = array(
+        $mapping = array(
             'tableName' => $tableName,
             'primaryKey' => $pKeyCol,
-            'nameCol' => $nameCol
+            'nameCol' => $nameCol,
         );
+        if ($sequence) {
+            $mapping['sequence'] = $sequence;
+        }
+        $this->tableMappings[$entityName] = $mapping;
     }
 
     /**
@@ -190,7 +202,8 @@ class Doctrine implements IDatasource
 
         $this->connection->insert($tableName, $data);
 
-        $insertId = $this->connection->lastInsertId();
+        $sequence = isset($this->tableMappings[$name]['sequence']) ? $this->tableMappings[$name]['sequence'] : null;
+        $insertId = $this->connection->lastInsertId($sequence);
 
         if (!is_null($phName))
         {
