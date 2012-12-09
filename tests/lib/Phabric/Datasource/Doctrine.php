@@ -72,6 +72,20 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->assertEquals($input, $obj->getMappings());
     }
+
+    public function testConstructorInitMappingsIncludingOptionalSequence()
+    {
+        $input = array(
+            'event' => array(
+                'tableName' => 't_event',
+                'nameCol' => 'name',
+                'primaryKey' => 'id',
+                'sequence' => 't_event_id_seq'),
+        );
+
+        $obj = new Doctrine($this->mockedConnection, $input);
+        $this->assertEquals($input, $obj->getMappings());
+    }
     
     public function testGetMappingAfterAdd()
     {
@@ -87,7 +101,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->assertEquals($expected, $this->object->getMappings());
     }
-    
+
     public function testGetMappingAfterSet()
     {
         $expected = array(
@@ -102,7 +116,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->assertEquals($expected, $this->object->getMappings());
     }
-    
+
     public function testSetTableMappingsOvveridesExistingMappings()
     {
         
@@ -120,7 +134,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->assertEquals($expected, $this->object->getMappings());
     }
-    
+
     public function testAddMappingsAppendsNotOverrides()
     {
         $this->object->addTableMapping('event', 't_event', 'id', 'name');
@@ -163,11 +177,41 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->mockedConnection
                 ->shouldReceive('lastInsertId')
-                ->withNoArgs()
+                ->with(null)
                 ->andReturn(12);
         
         // Set the table mapping
         $this->object->addTableMapping('event', 't_event', 'id', 'name');
+        
+        
+        $this->assertEquals(12, $this->object->insert($mEntity, $values));
+    }
+
+    public function testInsertWithSequence()
+    {
+        $mEntity = m::mock('\Phabric\Entity');
+        
+        $mEntity->shouldReceive('getName')
+                ->withNoArgs()
+                ->andReturn('event');
+        
+        $values = array(
+                        'name' => 'PHPNW',
+                        'desc' => 'A Great Conf!',
+                        'date' => '2011-10-08 12:00:00');
+             
+        $this->mockedConnection
+              ->shouldReceive('insert')
+              ->with('t_event', $values)
+              ->andReturn(12);
+        
+        $this->mockedConnection
+                ->shouldReceive('lastInsertId')
+                ->with('t_event_id_seq')
+                ->andReturn(12);
+        
+        // Set the table mapping
+        $this->object->addTableMapping('event', 't_event', 'id', 'name', 't_event_id_seq');
         
         
         $this->assertEquals(12, $this->object->insert($mEntity, $values));
@@ -244,7 +288,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
         
         $this->mockedConnection
                 ->shouldReceive('lastInsertId')
-                ->withNoArgs()
+                ->with(null)
                 ->andReturn(12);
         
         $this->mockedConnection
@@ -353,7 +397,7 @@ class DoctrineTest extends \PHPUnit_Framework_TestCase {
              
         $this->mockedConnection
                 ->shouldReceive('lastInsertId')
-                ->withNoArgs()
+                ->with(null)
                 ->andReturn(12);
         
         $this->mockedConnection
