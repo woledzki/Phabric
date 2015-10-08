@@ -644,7 +644,7 @@ Scenario:
     Given the following sessions exist
     | Session Code | name                  | time  | description                               |
     | BDD          | BDD with behat        | 12:50 | Test driven behaviour development is cool |
-    | CI           | Continous Integration | 13:30 | Integrate this!                           |
+    | CI           | Continuous Integration | 13:30 | Integrate this!                           |
     And the following attendees exist
     | name                  |
     | Jack The Lad          |
